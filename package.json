@@ -1,0 +1,18 @@
+{
+  "name": "gold-shop-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GOLD SHOP Telegram bot and API backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0",
+    "express": "^4.21.2",
+    "grammy": "^1.38.3"
+  }
+}
