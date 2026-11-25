@@ -340,8 +340,13 @@ const requestedItems = body.items;
         error: "Выбери корректный способ связи."
       });
     }
+if (!Object.prototype.hasOwnProperty.call(DELIVERY_METHODS, deliveryMethod)) {
+  return res.status(400).json({
+    error: "Выбери корректный способ доставки."
+  });
+}
+
 if (contactMethod === "telegram") {
-    if (contactMethod === "telegram") {
       const username = contact.replace(/^@/, "");
 
       if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username)) {
