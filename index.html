@@ -74,8 +74,12 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 .filter.active,.filter:hover{background:#fff;color:#080808;border-color:#fff}
 .sort-select{border:0;border-bottom:1px solid var(--line);background:#080808;padding:9px 2px;font-size:10px;color:#aaa}
 .sort-select option{background:#111;color:#fff}
-.product-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px 12px}
-.
+.product-grid{
+ display:grid;
+ grid-template-columns:repeat(4,minmax(0,1fr));
+ gap:36px 12px;
+}
+
 .product-card{
  min-width:0;
  cursor:pointer;
@@ -85,7 +89,9 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 
 .product-card:hover{
  transform:translateY(-5px);
- /* Плавное появление карточек при прокрутке */
+}
+
+/* Плавное появление при прокрутке */
 .product-card.reveal-card{
  opacity:0;
  transform:translateY(24px);
@@ -101,10 +107,7 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 
 .product-card.reveal-card.is-visible:hover{
  transform:translateY(-5px);
-} 
 }
-
-.product-media{
  position:relative;
  aspect-ratio:3/4;
  background:#171717;
