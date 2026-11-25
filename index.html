@@ -731,7 +731,10 @@ async function loadProducts(){
 function revealProductCards(){
  const cards=document.querySelectorAll('#productGrid .product-card');
 
- if(!('IntersectionObserver' in window)){
+ if(
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+  !('IntersectionObserver' in window)
+ ){
   cards.forEach(card=>card.classList.add('is-visible'));
   return;
  }
@@ -743,11 +746,14 @@ function revealProductCards(){
     obs.unobserve(entry.target);
    }
   });
- },{threshold:0.12,rootMargin:'0px 0px -30px 0px'});
+ },{
+  threshold:0.1,
+  rootMargin:'0px 0px -20px 0px'
+ });
 
  cards.forEach((card,index)=>{
   card.classList.add('reveal-card');
-  card.style.transitionDelay=(index%4)*70+'ms';
+  card.style.transitionDelay=(index%4)*55+'ms';
   observer.observe(card);
  });
 }
