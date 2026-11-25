@@ -219,20 +219,29 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
  transition:
   background .25s ease,
   transform .3s ease,
-  box-shadow .3s ease;
+  box-shadow .3s ease,
+  color .25s ease;
 }
 
 .favorite:hover{
  background:#fff;
  color:#080808;
- transform:scale(1.1);
- box-shadow:0 0 18px #ffffff35;
+ transform:scale(1.12);
+ box-shadow:0 0 20px #ffffff45;
 }
 
 .favorite.active{
  color:#fff;
  background:#242424;
- box-shadow:0 0 14px #ffffff20;
+ box-shadow:0 0 16px #ffffff35;
+ animation:favoritePop .35s ease;
+}
+
+@keyframes favoritePop{
+ 0%{transform:scale(1)}
+ 45%{transform:scale(1.3)}
+ 75%{transform:scale(.92)}
+ 100%{transform:scale(1)}
 }
 
 .quick-add{
@@ -258,6 +267,13 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 }
 
 .product-card:hover .quick-add{
+ opacity:1;
+ transform:translateY(0);
+}
+
+.quick-add:active{
+ transform:scale(.97);
+}
  opacity:1;
  transform:translateY(0);
 }
