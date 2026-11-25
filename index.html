@@ -1079,6 +1079,38 @@ function clearError(id){
  $(id).classList.remove('show');
 }
 
+function updateDeliveryFields(){
+ const method=$('deliveryMethod').value;
+ const cityInput=$('customerCity');
+ const addressInput=$('customerAddress');
+ const isPickup=method==='pickup';
+
+ if(isPickup){
+  cityInput.value='Нижний Новгород';
+  cityInput.readOnly=true;
+  addressInput.value='Самовывоз: Нижний Новгород, ул. Чебоксарская, 29А';
+  addressInput.readOnly=true;
+  closeAddressSuggestions();
+  $('addressHint').textContent='Самовывоз бесплатный. Адрес: ул. Чебоксарская, 29А.';
+ }else{
+  if(cityInput.readOnly){
+   cityInput.value='';
+   addressInput.value='';
+  }
+  cityInput.readOnly=false;
+  addressInput.readOnly=false;
+  $('addressHint').textContent=method
+   ? 'Стоимость доставки уточнит менеджер после оформления заказа.'
+   : 'Укажи точный адрес или пункт выдачи для доставки.';
+ }
+
+ clearError('deliveryMethodError');
+ clearError('cityError');
+ clearError('addressError');
+}
+
+$('deliveryMethod').addEventListener('change',updateDeliveryFields);
+
 /* АВТОПОДСКАЗКИ DADATA */
 function closeAddressSuggestions(){
  $('addressSuggestions').classList.remove('open');
