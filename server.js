@@ -321,12 +321,13 @@ app.post("/api/orders", async (req, res) => {
     const body = req.body || {};
 
     const customerName = String(body.customer_name || "").trim();
-    const contactMethod = String(body.contact_method || "").trim();
-    const contact = String(body.contact || "").trim();
-    const city = String(body.city || "").trim();
-    const deliveryAddress = String(body.delivery_address || "").trim();
-    const comment = String(body.comment || "").trim();
-    const requestedItems = body.items;
+const contactMethod = String(body.contact_method || "").trim();
+const deliveryMethod = String(body.delivery_method || "").trim();
+const contact = String(body.contact || "").trim();
+const city = String(body.city || "").trim();
+const deliveryAddress = String(body.delivery_address || "").trim();
+const comment = String(body.comment || "").trim();
+const requestedItems = body.items;
 
     if (customerName.length < 2 || customerName.length > 80) {
       return res.status(400).json({
