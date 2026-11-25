@@ -417,7 +417,7 @@ function toast(message){
  clearTimeout(toast.timer);
  toast.timer=setTimeout(()=>el.classList.remove('show'),2600);
 }
-function productById(id){return PRODUCTS.find(p=>p.id===id)}
+function productById(id){return PRODUCTS.find(p=>p.id===String(id))}
 function cartQuantity(){return cart.reduce((sum,item)=>sum+item.qty,0)}
 function cartSum(){return cart.reduce((sum,item)=>sum+(productById(item.id)?.price||0)*item.qty,0)}
 function updateCounts(){
