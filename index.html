@@ -1081,6 +1081,52 @@ footer{
  .puffer-editorial-card img{aspect-ratio:16/9}
 }
 
+
+/* User-approved clean homepage: no isolated product cutouts in hero or story */
+.hero-photo-frame,.hero-product-photo{display:none!important}
+.hero{
+ min-height:clamp(600px,72vh,820px)!important;
+ display:flex;
+ align-items:center;
+ background:#f6f6f3!important;
+}
+.hero-content{
+ max-width:760px!important;
+ width:100%;
+ padding:100px 8vw!important;
+ margin:0 auto;
+}
+.hero-bg{
+ background:linear-gradient(115deg,#f8f8f6 0%,#f1f1ee 58%,#fafaf8 100%)!important;
+}
+@media(max-width:620px){
+ .hero{
+  min-height:0!important;
+  display:block;
+  padding:0;
+ }
+ .hero-content{
+  max-width:100%!important;
+  padding:112px 7vw 100px!important;
+ }
+ .hero h1{font-size:clamp(54px,13vw,64px)!important}
+}
+.editorial{
+ display:block!important;
+ background:#f7f7f4!important;
+}
+.editorial-image,.editorial-product-photo{display:none!important}
+.editorial-copy{
+ max-width:760px;
+ margin:0 auto;
+ padding:90px 8vw!important;
+ text-align:center;
+}
+.editorial-copy .btn{margin-top:18px}
+@media(max-width:620px){
+ .editorial-copy{padding:68px 8vw!important}
+}
+
 </style>
 </head>
 
@@ -1103,7 +1149,7 @@ footer{
 
 <main>
 <section class="hero">
- <div class="hero-bg"></div><div class="hero-photo-frame"><img class="hero-product-photo" alt="GOLD SHOP streetwear collection"></div><div class="particle-layer" id="heroParticles"></div>
+ <div class="hero-bg"></div><div class="particle-layer" id="heroParticles"></div>
  <div class="hero-content">
   <div class="eyebrow">GOLD SHOP · CURATED STREETWEAR</div>
   <h1>Wear your<br>own story.</h1>
@@ -1165,7 +1211,7 @@ footer{
 </section>
 
 <section class="editorial" id="story">
- <div class="editorial-image"><img class="editorial-product-photo" alt="GOLD SHOP selected streetwear" loading="lazy"></div>
+ 
  <div class="editorial-copy">
   <div class="kicker">More than clothing</div>
   <h2>Find your<br>own direction.</h2>
@@ -1357,10 +1403,8 @@ function applyHomepageImages(){
   const img=document.querySelector(selector);
   if(img&&product?.images?.[0])img.src=product.images[0];
  };
- setImage('.hero-product-photo',outerwear);
  setImage('.promo-visual-one .promo-product-photo',outerwear);
  setImage('.promo-visual-two .promo-product-photo',fresh);
- setImage('.editorial-product-photo',jeans);
 }
 
 async function loadProducts(){
