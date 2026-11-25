@@ -610,17 +610,29 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
   <input id="customerContact" name="contact" autocomplete="off" required maxlength="100" placeholder="@username">
   <div class="field-error" id="contactError"></div>
 
-     <label for="customerCity">Город</label>
-   <input id="customerCity" name="city" required maxlength="100" autocomplete="address-level2" placeholder="Например, Нижний Новгород">
-   <div class="field-error" id="cityError"></div>
+     
+  <label for="deliveryMethod">Способ доставки</label>
+  <select id="deliveryMethod" name="delivery_method" required>
+   <option value="">Выбери способ доставки</option>
+   <option value="pickup">Самовывоз — Нижний Новгород</option>
+   <option value="cdek">СДЭК</option>
+   <option value="post">Почта России</option>
+   <option value="yandex">Яндекс Доставка</option>
+  </select>
+  <div class="field-error" id="deliveryMethodError"></div>
 
-   <label for="customerAddress">Улица, дом или пункт выдачи</label>
-   <div class="address-wrap">
-    <textarea id="customerAddress" name="address" required maxlength="500" autocomplete="street-address" placeholder="Укажи улицу, дом или адрес пункта выдачи"></textarea>
-    <div class="address-suggestions" id="addressSuggestions"></div>
-   </div>
-   <div class="address-hint">Укажи точный адрес или пункт выдачи для доставки.</div>
-   <div class="field-error" id="addressError"></div>
+  <label for="customerCity">Город</label>
+  <input id="customerCity" name="city" required maxlength="100" autocomplete="address-level2" placeholder="Например, Нижний Новгород">
+  <div class="field-error" id="cityError"></div>
+
+  <label for="customerAddress">Адрес или пункт выдачи</label>
+  <div class="address-wrap">
+   <textarea id="customerAddress" name="address" required maxlength="500" autocomplete="street-address" placeholder="Укажи улицу, дом или адрес пункта выдачи"></textarea>
+   <div class="address-suggestions" id="addressSuggestions"></div>
+  </div>
+  <div class="address-hint" id="addressHint">Укажи точный адрес или пункт выдачи для доставки.</div>
+  <div class="field-error" id="addressError"></div>
+
 
   <label for="customerComment">Комментарий (необязательно)</label>
   <textarea id="customerComment" name="comment" maxlength="500" placeholder="Пожелания к заказу"></textarea>
