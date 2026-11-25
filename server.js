@@ -479,20 +479,23 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
+    
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .insert({
         customer_name: customerName,
         phone: contact,
         contact_method: contactMethod,
+        delivery_method: deliveryMethod,
         city,
         delivery_address: deliveryAddress,
         comment,
         status: "new",
         total
       })
-      .select("id, customer_name, phone, contact_method, city, delivery_address, comment, status, total")
+      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, status, total")
       .single();
+
 
     if (orderError) throw orderError;
 
