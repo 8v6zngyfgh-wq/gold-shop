@@ -85,6 +85,23 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 
 .product-card:hover{
  transform:translateY(-5px);
+ /* Плавное появление карточек при прокрутке */
+.product-card.reveal-card{
+ opacity:0;
+ transform:translateY(24px);
+ transition:
+  opacity .65s ease,
+  transform .65s cubic-bezier(.2,.7,.2,1);
+}
+
+.product-card.reveal-card.is-visible{
+ opacity:1;
+ transform:translateY(0);
+}
+
+.product-card.reveal-card.is-visible:hover{
+ transform:translateY(-5px);
+} 
 }
 
 .product-media{
