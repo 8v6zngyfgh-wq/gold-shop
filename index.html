@@ -1183,13 +1183,20 @@ $('checkoutForm').addEventListener('submit', async e => {
 
   let valid = true;
 
-  const name = $('customerName').value.trim();
+    const name = $('customerName').value.trim();
+  const deliveryMethod = $('deliveryMethod').value;
   const city = $('customerCity').value.trim();
   const address = $('customerAddress').value.trim();
 
   clearError('nameError');
+  clearError('deliveryMethodError');
   clearError('cityError');
   clearError('addressError');
+
+  if (!['pickup', 'cdek', 'post', 'yandex'].includes(deliveryMethod)) {
+    showError('deliveryMethodError', 'Выбери способ доставки.');
+    valid = false;
+  }
 
   if (name.length < 2) {
     showError('nameError', 'Введи имя — минимум 2 символа.');
@@ -1219,9 +1226,10 @@ $('checkoutForm').addEventListener('submit', async e => {
   const originalText = submitButton.textContent;
 
   const payload = {
-    customer_name: name,
+        customer_name: name,
     contact_method: contactType,
     contact: $('customerContact').value.trim(),
+    delivery_method: deliveryMethod,
     city,
     delivery_address: address,
     comment: $('customerComment').value.trim(),
@@ -1262,8 +1270,9 @@ $('checkoutForm').addEventListener('submit', async e => {
     renderCart();
     updateCounts();
 
-    $('checkoutForm').reset();
+        $('checkoutForm').reset();
     setContactType('telegram');
+    updateDeliveryFields();
 
     $('checkoutModal').classList.remove('open');
     closeCart();
