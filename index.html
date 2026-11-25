@@ -451,6 +451,62 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .address-hint{font-size:9px;color:#888;margin-top:7px;line-height:1.5}
 .toast{position:fixed;z-index:80;bottom:22px;left:50%;transform:translate(-50%,20px);background:#fff;color:#080808;padding:13px 18px;font-size:10px;letter-spacing:.08em;opacity:0;pointer-events:none;transition:.3s;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+/* Белые карточки каталога — единый фон с фотографиями товаров */
+.product-card{
+ background:#fff;
+ color:#080808;
+ border:1px solid rgba(0,0,0,.06);
+}
+.product-media{
+ background:#fff!important;
+}
+.product-media:after{
+ background:transparent!important;
+ opacity:0!important;
+}
+.product-tag{
+ background:rgba(8,8,8,.9);
+ color:#fff;
+}
+.favorite{
+ background:rgba(255,255,255,.94);
+ color:#080808;
+ border-color:#08080830;
+}
+.favorite:hover,.favorite.active{
+ background:#080808;
+ color:#fff;
+}
+.quick-add{
+ background:#080808;
+ color:#fff;
+}
+.quick-add:hover{
+ background:#333;
+}
+.product-info{
+ background:#fff;
+ color:#080808;
+ padding:14px 12px 13px;
+}
+.product-name,.price{
+ color:#080808;
+}
+.product-card:hover .product-name{
+ color:#555;
+}
+.product-meta{
+ color:#777;
+}
+/* На белом фоне искры делаем графитовыми */
+.product-media .spark{
+ background:#555;
+ box-shadow:0 0 4px 1px rgba(40,40,40,.28),0 0 9px rgba(70,70,70,.2);
+}
+.product-media .spark.spark-dark{
+ background:#222;
+ box-shadow:0 0 4px 1px rgba(20,20,20,.32),0 0 9px rgba(60,60,60,.22);
+}
 .particle-layer{position:absolute!important;inset:0!important;overflow:hidden;pointer-events:none;z-index:4!important;isolation:isolate}
 .hero .particle-layer{z-index:1!important}
 .spark{position:absolute;bottom:-5px;width:3px;height:3px;background:#d7d7d7;border-radius:50%;opacity:0;filter:blur(.1px);box-shadow:0 0 5px 1px rgba(230,230,230,.65),0 0 11px rgba(170,170,170,.35);animation:rise var(--dur,4s) linear forwards;will-change:transform,opacity}
@@ -754,7 +810,7 @@ const PRODUCT_IMAGE_FALLBACK = '';
 let PRODUCTS = [];
 
 function normalizeProduct(product) {
- const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))):[];
+ const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))&&!/\/CP%20COMPANY\/cp-company\.png(?:\?|$)/i.test(x)):[];
  const variants=Array.isArray(product.variants)?product.variants.map(v=>({color:String(v.color||''),images:imgs(v.images),sizes:Object.fromEntries(Object.entries(v.sizes||{}).map(([z,q])=>[z,Math.max(0,Number(q)||0)]))})):[],first=variants[0],images=imgs(product.images);
  const category=String(product.category||'').toLowerCase(),price=Number(product.price)||0,oldPrice=Number(product.old_price)||null;
  return {id:String(product.id),name:String(product.name||'Товар GOLD SHOP'),category,categoryLabel:CATEGORY_LABELS[category]||'GOLD SHOP',price,oldPrice,tag:oldPrice&&oldPrice>price?'Sale':'GOLD SHOP',description:String(product.description||''),variants,sizes:[...new Set(variants.flatMap(v=>Object.entries(v.sizes).filter(([,q])=>q>0).map(([z])=>z)))],images:first?.images?.length?first.images:(images.length?images:[PRODUCT_IMAGE_FALLBACK])};
