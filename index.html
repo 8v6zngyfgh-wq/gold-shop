@@ -451,7 +451,8 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .address-hint{font-size:9px;color:#888;margin-top:7px;line-height:1.5}
 .toast{position:fixed;z-index:80;bottom:22px;left:50%;transform:translate(-50%,20px);background:#fff;color:#080808;padding:13px 18px;font-size:10px;letter-spacing:.08em;opacity:0;pointer-events:none;transition:.3s;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-.particle-layer{position:absolute!important;inset:0!important;overflow:hidden;pointer-events:none;z-index:6!important;isolation:isolate}
+.particle-layer{position:absolute!important;inset:0!important;overflow:hidden;pointer-events:none;z-index:4!important;isolation:isolate}
+.hero .particle-layer{z-index:1!important}
 .spark{position:absolute;bottom:-5px;width:3px;height:3px;background:#d7d7d7;border-radius:50%;opacity:0;filter:blur(.1px);box-shadow:0 0 5px 1px rgba(230,230,230,.65),0 0 11px rgba(170,170,170,.35);animation:rise var(--dur,4s) linear forwards;will-change:transform,opacity}
 .spark.spark-dark{background:#777;box-shadow:0 0 4px 1px rgba(235,235,235,.7),0 0 9px rgba(110,110,110,.65)}
 @keyframes rise{0%{transform:translate3d(0,0,0) scale(.55);opacity:0}10%{opacity:.9}35%{opacity:.78}75%{opacity:.42}100%{transform:translate3d(var(--drift,20px),var(--travel,-320px),0) scale(.15);opacity:0}}
@@ -501,9 +502,9 @@ header{background:rgba(9,9,9,.88);border-bottom-color:rgba(255,255,255,.1)}
 .product-media{border:1px solid rgba(255,255,255,.055);border-radius:2px}
 .product-media img{object-fit:contain}
 .product-media .front-image,.product-media .back-image{padding:10%;mix-blend-mode:normal}
-.product-media .particle-layer{z-index:3}
-.product-tag{z-index:4}
-.product-media .favorite,.product-media .quick-add{z-index:5}
+.product-media .particle-layer{z-index:4!important}
+.product-tag{z-index:8}
+.product-media .favorite,.product-media .quick-add{z-index:8}
 .product-tag{border-radius:1px;letter-spacing:.16em}
 .favorite{backdrop-filter:blur(8px)}
 .quick-add{border-radius:1px;letter-spacing:.16em}
