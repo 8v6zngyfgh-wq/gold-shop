@@ -430,11 +430,12 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .modal-details h2{font-size:42px;margin:12px 0}
 .modal-price{font-size:14px;margin:15px 0 24px}
 .modal-description{font-size:12px;line-height:1.9;color:var(--muted);white-space:pre-line}
-.size-title{display:flex;justify-content:space-between;align-items:center;margin:30px 0 12px;font-size:9px;letter-spacing:.15em;text-transform:uppercase}
-.size-help{border:0;border-bottom:1px solid;background:none;font-size:9px;cursor:pointer;color:#fff}
-.sizes{display:flex;gap:8px;flex-wrap:wrap}
-.size-btn{min-width:48px;height:42px;padding:0 12px;border:1px solid var(--line);background:transparent;font-size:10px;cursor:pointer}
-.size-btn.selected,.size-btn:hover{background:#fff;color:#080808;border-color:#fff}
+.variant-title{margin:24px 0 10px;font-size:9px;letter-spacing:.15em;text-transform:uppercase}
+.color-options,.sizes{display:flex;gap:8px;flex-wrap:wrap}
+.color-btn,.size-btn{min-height:42px;padding:0 14px;border:1px solid var(--line);background:transparent;color:#fff;font-size:10px;cursor:pointer}
+.color-btn.selected,.size-btn.selected,.color-btn:not(:disabled):hover,.size-btn:not(:disabled):hover{background:#fff;color:#080808;border-color:#fff}
+.color-btn:disabled,.size-btn:disabled{opacity:.28;cursor:not-allowed;text-decoration:line-through}
+.variant-stock{font-size:9px;color:var(--muted);margin-top:10px}
 .modal-add{width:100%;margin-top:26px}
 .modal-note{font-size:9px;color:var(--muted);line-height:1.7;margin-top:14px}
 .checkout-wrap{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:18px;overflow:auto}
@@ -581,8 +582,9 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
    <button class="close" id="productClose" aria-label="Закрыть">×</button>
    <div class="kicker" id="modalCategory"></div><h2 id="modalName"></h2><div class="modal-price" id="modalPrice"></div>
    <p class="modal-description" id="modalDescription"></p>
+   <div class="variant-title">Выбери цвет</div><div class="color-options" id="colorOptions"></div>
    <div class="size-title"><span>Выбери размер</span><button class="size-help" id="sizeHelp">Таблица размеров</button></div>
-   <div class="sizes" id="sizeOptions"></div>
+   <div class="sizes" id="sizeOptions"></div><div class="variant-stock" id="variantStock"></div>
    <button class="btn modal-add" id="modalAdd">Добавить в корзину ↗</button>
    <p class="modal-note">Фотографии и характеристики в этой версии демонстрационные. Точные состав, замеры и наличие добавим после получения данных о товаре.</p>
   </div>
@@ -679,33 +681,10 @@ const PRODUCT_IMAGE_FALLBACK =
 let PRODUCTS = [];
 
 function normalizeProduct(product) {
-  const images = Array.isArray(product.images)
-    ? product.images.filter(
-        image => typeof image === 'string' && /^https?:\/\//i.test(image)
-      )
-    : [];
-
-  const sizes = Array.isArray(product.sizes)
-    ? product.sizes.map(size => String(size).trim()).filter(Boolean)
-    : [];
-
-  const category = String(product.category || '').toLowerCase();
-  const price = Number(product.price) || 0;
-  const oldPrice = Number(product.old_price) || null;
-
-  return {
-    id: String(product.id),
-    name: String(product.name || 'Товар GOLD SHOP'),
-    category,
-    categoryLabel: CATEGORY_LABELS[category] || 'GOLD SHOP',
-    price,
-    oldPrice,
-    tag: oldPrice && oldPrice > price ? 'Sale' : 'GOLD SHOP',
-    description: String(product.description || ''),
-    sizes,
-    images: images.length ? images : [PRODUCT_IMAGE_FALLBACK],
-    stock: Number(product.stock) || 0
-  };
+ const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&/^https?:\\/\\//i.test(x)):[];
+ const variants=Array.isArray(product.variants)?product.variants.map(v=>({color:String(v.color||''),images:imgs(v.images),sizes:Object.fromEntries(Object.entries(v.sizes||{}).map(([z,q])=>[z,Math.max(0,Number(q)||0)]))})):[],first=variants[0],images=imgs(product.images);
+ const category=String(product.category||'').toLowerCase(),price=Number(product.price)||0,oldPrice=Number(product.old_price)||null;
+ return {id:String(product.id),name:String(product.name||'Товар GOLD SHOP'),category,categoryLabel:CATEGORY_LABELS[category]||'GOLD SHOP',price,oldPrice,tag:oldPrice&&oldPrice>price?'Sale':'GOLD SHOP',description:String(product.description||''),variants,sizes:[...new Set(variants.flatMap(v=>Object.entries(v.sizes).filter(([,q])=>q>0).map(([z])=>z)))],images:first?.images?.length?first.images:(images.length?images:[PRODUCT_IMAGE_FALLBACK])};
 }
 const TELEGRAM_USERNAME='go1d_sh0p';
 const money=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
@@ -714,7 +693,7 @@ const safeRead=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)
 
 let cart=safeRead('goldShopCart',[]);
 let favorites=new Set(safeRead('goldShopFavorites',[]));
-let activeFilter='all',activeProduct=null,activeSize='',activeImage=0;
+let activeFilter='all',activeProduct=null,activeColor='',activeSize='',activeImage=0;
 let contactType='telegram';
 let addressTimer=null;
 let addressRequest=0;
@@ -902,26 +881,12 @@ $('productGrid').addEventListener('keydown',e=>{
  }
 });
 
-function openProduct(id){
- const p=productById(id);if(!p)return;
- activeProduct=p;activeSize='';activeImage=0;
- $('modalCategory').textContent=p.categoryLabel;
- $('modalName').textContent=p.name;
- $('modalPrice').textContent=money(p.price);
- $('modalDescription').textContent=p.description;
- renderGallery();
- $('sizeOptions').innerHTML=p.sizes.map(s=>`<button class="size-btn" type="button" data-size="${escapeAttr(s)}">${escapeHtml(s)}</button>`).join('');
- $('productModal').classList.add('open');
- document.body.style.overflow='hidden';
-}
-function renderGallery(){
- const p=activeProduct;if(!p)return;
- $('modalImage').src=p.images[activeImage];
- $('modalImage').alt=p.name+' — фото '+(activeImage+1);
- $('galleryDots').innerHTML=p.images.map((_,i)=>`<button class="${i===activeImage?'active':''}" data-image="${i}" aria-label="Фото ${i+1}"></button>`).join('');
- $('galleryPrev').style.display=p.images.length>1?'block':'none';
- $('galleryNext').style.display=p.images.length>1?'block':'none';
-}
+function selectedVariant(){return activeProduct?.variants.find(v=>v.color===activeColor)||null}
+function variantImages(){const a=selectedVariant()?.images||[];return a.length?a:[PRODUCT_IMAGE_FALLBACK]}
+function openProduct(id){const p=productById(id);if(!p)return;activeProduct=p;activeColor=p.variants.find(v=>Object.values(v.sizes).some(q=>q>0))?.color||p.variants[0]?.color||'';activeSize='';activeImage=0;$('modalCategory').textContent=p.categoryLabel;$('modalName').textContent=p.name;$('modalPrice').textContent=money(p.price);$('modalDescription').textContent=p.description;renderColors();renderSizes();renderGallery();$('productModal').classList.add('open');document.body.style.overflow='hidden'}
+function renderColors(){$('colorOptions').innerHTML=(activeProduct?.variants||[]).map(v=>{const ok=Object.values(v.sizes).some(q=>q>0);return `<button class="color-btn ${v.color===activeColor?'selected':''}" data-color="${escapeAttr(v.color)}" ${ok?'':'disabled'}>${escapeHtml(v.color)}</button>`}).join('')}
+function renderSizes(){const entries=Object.entries(selectedVariant()?.sizes||{});if(!entries.some(([z,q])=>z===activeSize&&q>0))activeSize='';$('sizeOptions').innerHTML=entries.map(([z,q])=>`<button class="size-btn ${z===activeSize?'selected':''}" data-size="${escapeAttr(z)}" ${q>0?'':'disabled'}>${escapeHtml(z)}</button>`).join('');const total=entries.reduce((n,[,q])=>n+q,0);$('variantStock').textContent=total?`В наличии: ${total} шт.`:'Этот цвет закончился';$('modalAdd').disabled=!activeSize}
+function renderGallery(){const a=variantImages();activeImage=Math.min(activeImage,a.length-1);$('modalImage').src=a[activeImage];$('modalImage').alt=activeProduct.name+' — '+activeColor+' — фото '+(activeImage+1);$('galleryDots').innerHTML=a.map((_,i)=>`<button class="${i===activeImage?'active':''}" data-image="${i}" aria-label="Фото ${i+1}"></button>`).join('');$('galleryPrev').style.display=a.length>1?'block':'none';$('galleryNext').style.display=a.length>1?'block':'none'}
 function closeProduct(){
  $('productModal').classList.remove('open');
  document.body.style.overflow='';
@@ -929,36 +894,23 @@ function closeProduct(){
 $('productClose').addEventListener('click',closeProduct);
 $('productModal').addEventListener('click',e=>{if(e.target===$('productModal'))closeProduct()});
 $('galleryPrev').addEventListener('click',()=>{
- activeImage=(activeImage-1+activeProduct.images.length)%activeProduct.images.length;
+ const a=variantImages();activeImage=(activeImage-1+a.length)%a.length;
  renderGallery();
 });
 $('galleryNext').addEventListener('click',()=>{
- activeImage=(activeImage+1)%activeProduct.images.length;
+ const a=variantImages();activeImage=(activeImage+1)%a.length;
  renderGallery();
 });
 $('galleryDots').addEventListener('click',e=>{
  const b=e.target.closest('[data-image]');
  if(b){activeImage=Number(b.dataset.image);renderGallery()}
 });
-$('sizeOptions').addEventListener('click',e=>{
- const b=e.target.closest('[data-size]');if(!b)return;
- activeSize=b.dataset.size;
- document.querySelectorAll('.size-btn').forEach(x=>x.classList.toggle('selected',x===b));
-});
+$('colorOptions').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b||b.disabled)return;activeColor=b.dataset.color;activeSize='';activeImage=0;renderColors();renderSizes();renderGallery()});
+$('sizeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-size]');if(!b||b.disabled)return;activeSize=b.dataset.size;renderSizes()});
 $('sizeHelp').addEventListener('click',()=>toast('Точную таблицу размеров добавим для каждой модели'));
-$('modalAdd').addEventListener('click',()=>{
- if(!activeProduct)return;
- if(!activeSize){toast('Сначала выбери размер');return}
- addToCart(activeProduct.id,activeSize);
- closeProduct();openCart();
-});
+$('modalAdd').addEventListener('click',()=>{if(!activeProduct||!activeColor||!activeSize){toast('Сначала выбери цвет и размер');return}addToCart(activeProduct.id,activeColor,activeSize);closeProduct();openCart()});
+function addToCart(id,color,size){const found=cart.find(x=>x.id===id&&x.color===color&&x.size===size);if(found)found.qty++;else cart.push({id,color,size,qty:1});saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину')}
 
-function addToCart(id,size){
- const found=cart.find(x=>x.id===id&&x.size===size);
- if(found)found.qty++;
- else cart.push({id,size,qty:1});
- saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину');
-}
 function renderCart(){
  const box=$('cartItems');
  if(!cart.length){
@@ -971,7 +923,7 @@ function renderCart(){
     <img src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)}">
     <div>
      <h4>${escapeHtml(p.name)}</h4>
-     <small>Размер: ${escapeHtml(item.size)} · ${money(p.price)}</small>
+     <small>Цвет: ${escapeHtml(item.color||'—')} · Размер: ${escapeHtml(item.size)} · ${money(p.price)}</small>
      <div class="qty">
       <button data-qty="${index}" data-delta="-1" aria-label="Уменьшить">−</button>
       <span>${item.qty}</span>
@@ -1235,7 +1187,8 @@ $('checkoutForm').addEventListener('submit', async e => {
     comment: $('customerComment').value.trim(),
     items: cart.map(item => ({
       id: item.id,
-      size: item.size,
+      color: item.color,
+       size: item.size,
       qty: item.qty
     }))
   };
