@@ -1,4 +1,5 @@
 
+
 const express = require("express");
 const { Bot } = require("grammy");
 const { createClient } = require("@supabase/supabase-js");
@@ -14,6 +15,29 @@ for (const key of requiredEnv) {
 
 const app = express();
 app.disable("x-powered-by");
+
+// Разрешаем сайту GOLD SHOP обращаться к API каталога
+const allowedOrigins = new Set([
+  "https://gold-shop-rnph.onrender.com"
+]);
+
+app.use((req, res, next) => {
+  const origin = req.get("Origin");
+  res.vary("Origin");
+
+  if (origin && allowedOrigins.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(!origin || allowedOrigins.has(origin) ? 204 : 403);
+  }
+
+  next();
+});
+
 app.use(express.json({ limit: "1mb" }));
 
 const bot = new Bot(process.env.BOT_TOKEN);
