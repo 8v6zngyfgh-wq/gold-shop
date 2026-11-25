@@ -663,7 +663,11 @@ function updateCounts(){
 function escapeHtml(value){
  return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function escapeAttr(value){return escapeHtml(async function loadProducts(){
+function escapeAttr(value){
+ return escapeHtml(value);
+}
+
+async function loadProducts(){
  const grid=$('productGrid');
  $('productCountLabel').textContent='ЗАГРУЗКА…';
  grid.innerHTML='<div class="empty-state">Загружаем каталог GOLD SHOP…</div>';
@@ -706,7 +710,8 @@ function escapeAttr(value){return escapeHtml(async function loadProducts(){
   grid.innerHTML='<div class="empty-state">Не удалось загрузить товары. Попробуй обновить страницу.</div>';
  }
 }
-                                             function revealProductCards(){
+
+function revealProductCards(){
  const cards=document.querySelectorAll('#productGrid .product-card');
 
  if(!('IntersectionObserver' in window)){
@@ -729,34 +734,43 @@ function escapeAttr(value){return escapeHtml(async function loadProducts(){
   observer.observe(card);
  });
 }
-  function renderProducts(){
+
+function renderProducts(){
  const sort=$('sortSelect').value;
  let list=PRODUCTS.filter(p=>activeFilter==='all'||p.category===activeFilter);
+
  if(sort==='low')list.sort((a,b)=>a.price-b.price);
  if(sort==='high')list.sort((a,b)=>b.price-a.price);
-$('productCountLabel').textContent=list.length+' ITEMS';
+
+ $('productCountLabel').textContent=list.length+' ITEMS';
+
  const grid=$('productGrid');
- if(!list.length){grid.innerHTML='<div class="empty-state">Пока здесь нет товаров.</div>';return}
+
+ if(!list.length){
+  grid.innerHTML='<div class="empty-state">Пока здесь нет товаров.</div>';
+  return;
+ }
+
  grid.innerHTML=list.map(p=>`
-  <article class="product-card" data-open-product="${p.id}" tabindex="0" aria-label="Открыть ${escapeAttr(p.name)}">
+  <article class="product-card" data-open-product="${escapeAttr(p.id)}" tabindex="0" aria-label="Открыть ${escapeAttr(p.name)}">
    <div class="product-media">
     <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy">
     <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
     <span class="product-tag">${escapeHtml(p.tag||'GOLD SHOP')}</span>
-    <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${p.id}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
-    <button class="quick-add" data-quick="${p.id}">Выбрать размер</button>
+    <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
+    <button class="quick-add" data-quick="${escapeAttr(p.id)}">Выбрать размер</button>
    </div>
    <div class="product-info">
-    <div><p class="product-name">${escapeHtml(p.name)}</p><div class="product-meta">${escapeHtml(p.categoryLabel)}</div></div>
+    <div>
+     <p class="product-name">${escapeHtml(p.name)}</p>
+     <div class="product-meta">${escapeHtml(p.categoryLabel)}</div>
+    </div>
     <div class="price">${money(p.price)}</div>
    </div>
   </article>`).join('');
 
  revealProductCards();
 }
-}
-
-function setFilter(filter){
  activeFilter=filter;
  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
  renderProducts();
