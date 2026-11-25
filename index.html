@@ -874,6 +874,10 @@ async function loadProducts(){
 
   PRODUCTS=payload.products.map(normalizeProduct);
 
+  // При загрузке всегда открываем полный каталог, а не случайно выбранную категорию.
+  activeFilter='all';
+  document.querySelectorAll('.filter').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
+
   cart=cart.filter(item=>productById(item.id));
   favorites=new Set([...favorites].filter(id=>productById(id)));
 
