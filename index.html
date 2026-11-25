@@ -863,6 +863,40 @@ footer{
  .editorial-image{min-height:300px!important}
 }
 
+
+/* Homepage editorial photography */
+.hero{background:#101010}
+.hero-photo-frame{
+ position:absolute;z-index:1;right:7%;top:9%;bottom:8%;width:min(43%,620px);
+ display:flex;align-items:center;justify-content:center;overflow:hidden;
+ background:#f7f7f5;border:1px solid rgba(255,255,255,.22);
+ box-shadow:0 28px 90px rgba(0,0,0,.32);
+}
+.hero-product-photo{width:100%;height:100%;object-fit:contain;padding:5%;display:block}
+.hero-content{max-width:58%;padding-right:0}
+.promo-visual{background:#f5f5f2}
+.promo-visual:before{z-index:1;pointer-events:none}
+.promo-product-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:9%;z-index:0;transition:transform 1s var(--ease)}
+.promo:hover .promo-product-photo{transform:scale(1.045)}
+.promo:after{z-index:1}
+.promo-copy{z-index:2}
+.editorial-image{background:#f5f5f2}
+.editorial-image:before{z-index:1;pointer-events:none}
+.editorial-image:after{z-index:2}
+.editorial-product-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8%;z-index:0}
+@media(max-width:900px){
+ .hero-photo-frame{right:4%;width:43%;top:12%;bottom:12%}
+ .hero-content{max-width:62%}
+}
+@media(max-width:620px){
+ .hero{min-height:760px}
+ .hero-photo-frame{right:6%;top:5%;bottom:auto;width:58%;height:340px;opacity:.96}
+ .hero-content{max-width:100%;padding:0 7vw 12vw;z-index:3}
+ .hero h1{font-size:58px}
+ .promo-product-photo{padding:7%}
+ .editorial-product-photo{padding:4%}
+}
+
 </style>
 </head>
 
@@ -885,7 +919,7 @@ footer{
 
 <main>
 <section class="hero">
- <div class="hero-bg"></div><div class="particle-layer" id="heroParticles"></div>
+ <div class="hero-bg"></div><div class="hero-photo-frame"><img class="hero-product-photo" alt="GOLD SHOP streetwear collection"></div><div class="particle-layer" id="heroParticles"></div>
  <div class="hero-content">
   <div class="eyebrow">GOLD SHOP · CURATED STREETWEAR</div>
   <h1>Wear your<br>own story.</h1>
@@ -898,11 +932,11 @@ footer{
  <div class="section-head"><div><div class="kicker">Selected for you</div><h2>Выбирай своё</h2></div><a class="text-link" href="#catalog">Весь каталог ↗</a></div>
  <div class="promo-grid">
   <a class="promo" href="#catalog" data-promo-filter="outerwear">
-   <div class="promo-visual promo-visual-one" aria-hidden="true"></div>
+   <div class="promo-visual promo-visual-one" aria-hidden="true"><img class="promo-product-photo" alt="" loading="lazy"></div>
    <div class="promo-copy"><div class="eyebrow">01 / Outerwear</div><h3>Верхняя одежда</h3><span class="eyebrow">Открыть подборку ↗</span></div>
   </a>
   <a class="promo" href="#catalog" data-promo-filter="all">
-   <div class="promo-visual promo-visual-two" aria-hidden="true"></div>
+   <div class="promo-visual promo-visual-two" aria-hidden="true"><img class="promo-product-photo" alt="" loading="lazy"></div>
    <div class="promo-copy"><div class="eyebrow">02 / New season</div><h3>Новая коллекция</h3><span class="eyebrow">Смотреть всё ↗</span></div>
   </a>
  </div>
@@ -928,7 +962,7 @@ footer{
 </section>
 
 <section class="editorial" id="story">
- <div class="editorial-image"></div>
+ <div class="editorial-image"><img class="editorial-product-photo" alt="GOLD SHOP selected streetwear" loading="lazy"></div>
  <div class="editorial-copy">
   <div class="kicker">More than clothing</div>
   <h2>Find your<br>own direction.</h2>
@@ -1109,6 +1143,23 @@ function escapeAttr(value){
  return escapeHtml(value);
 }
 
+
+function applyHomepageImages(){
+ const usable=PRODUCTS.filter(p=>p.images&&p.images.length&&p.images[0]);
+ if(!usable.length)return;
+ const outerwear=usable.find(p=>p.category==='outerwear')||usable[0];
+ const fresh=usable.find(p=>p.category==='hoodies')||usable.find(p=>p.id!==outerwear.id)||usable[0];
+ const jeans=usable.find(p=>p.category==='jeans')||fresh;
+ const setImage=(selector,product)=>{
+  const img=document.querySelector(selector);
+  if(img&&product?.images?.[0])img.src=product.images[0];
+ };
+ setImage('.hero-product-photo',outerwear);
+ setImage('.promo-visual-one .promo-product-photo',outerwear);
+ setImage('.promo-visual-two .promo-product-photo',fresh);
+ setImage('.editorial-product-photo',jeans);
+}
+
 async function loadProducts(){
  const grid=$('productGrid');
  $('productCountLabel').textContent='ЗАГРУЗКА…';
@@ -1131,6 +1182,7 @@ async function loadProducts(){
   }
 
   PRODUCTS=payload.products.map(normalizeProduct);
+  applyHomepageImages();
 
   // При загрузке всегда открываем полный каталог, а не случайно выбранную категорию.
   activeFilter='all';
