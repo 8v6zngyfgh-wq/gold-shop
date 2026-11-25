@@ -353,41 +353,49 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 
 const DADATA_TOKEN = 'ВСТАВЬ_СЮДА_API_ТОКЕН_DADATA';
 
-const PRODUCTS = [
- {id:'mertra-puffer',name:'Mertra Puffer Jacket',category:'outerwear',categoryLabel:'Верхняя одежда',price:8990,tag:'Bestseller',description:'Демонстрационное описание пуховика Mertra. Позже добавим точное описание материала, посадки, утеплителя и особенности модели.',sizes:['S','M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'gallery-yellow',name:'Gallery Dept Flared',category:'jeans',categoryLabel:'Джинсы',price:1990,tag:'Limited',description:'Демонстрационное описание джинсов Gallery Dept Flared. Добавим точный состав, посадку, длину и замеры по размерам.',sizes:['M','L'],images:[
-  'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1475178626620-a4d074967452?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'broken-planet-zip',name:'Broken Planet Zip Hoodie',category:'hoodies',categoryLabel:'Худи',price:6490,tag:'New',description:'Демонстрационное описание зип-худи Broken Planet. Позже добавим точный принт, состав ткани, плотность и замеры.',sizes:['S','M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1578681994506-b8f463449011?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'cp-vest',name:'CP Company Vest',category:'vests',categoryLabel:'Жилеты',price:7290,tag:'Selection',description:'Демонстрационное описание жилета CP Company. Позже внесём особенности модели, материалы, детали и таблицу замеров.',sizes:['M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'black-denim',name:'Washed Black Denim',category:'jeans',categoryLabel:'Джинсы',price:3490,tag:'Essential',description:'Демонстрационное описание чёрных джинсов. Добавим точный оттенок, крой, посадку и замеры.',sizes:['S','M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1511196044526-5cb3bceadf9b?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'daily-puffer',name:'Essential Puffer',category:'outerwear',categoryLabel:'Верхняя одежда',price:7990,tag:'New',description:'Демонстрационная карточка для будущей модели верхней одежды. Заменим фото, название, стоимость и размеры.',sizes:['S','M','L'],images:[
-  'https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1544923246-77307dd654cb?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'basic-hoodie',name:'Heavyweight Hoodie',category:'hoodies',categoryLabel:'Худи',price:4290,tag:'Essential',description:'Демонстрационная карточка худи. Позже внесём точные параметры изделия и фотографии спереди, сзади и деталей.',sizes:['S','M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1578681994506-b8f463449011?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=1000&q=85'
- ]},
- {id:'utility-vest',name:'Utility Vest',category:'vests',categoryLabel:'Жилеты',price:5990,tag:'Selection',description:'Демонстрационная карточка жилета. Позже добавим точную модель, детали, наличие и размерную сетку.',sizes:['M','L','XL'],images:[
-  'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=1000&q=85',
-  'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=1000&q=85'
- ]}
-];
+const PRODUCTS_API_URL = 'https://gold-shop-api-gv5e.onrender.com/api/products';
 
+const CATEGORY_LABELS = {
+  outerwear: 'Верхняя одежда',
+  jeans: 'Джинсы',
+  hoodies: 'Худи',
+  vests: 'Жилеты'
+};
+
+const PRODUCT_IMAGE_FALLBACK =
+  'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1000&q=85';
+
+let PRODUCTS = [];
+
+function normalizeProduct(product) {
+  const images = Array.isArray(product.images)
+    ? product.images.filter(
+        image => typeof image === 'string' && /^https?:\/\//i.test(image)
+      )
+    : [];
+
+  const sizes = Array.isArray(product.sizes)
+    ? product.sizes.map(size => String(size).trim()).filter(Boolean)
+    : [];
+
+  const category = String(product.category || '').toLowerCase();
+  const price = Number(product.price) || 0;
+  const oldPrice = Number(product.old_price) || null;
+
+  return {
+    id: String(product.id),
+    name: String(product.name || 'Товар GOLD SHOP'),
+    category,
+    categoryLabel: CATEGORY_LABELS[category] || 'GOLD SHOP',
+    price,
+    oldPrice,
+    tag: oldPrice && oldPrice > price ? 'Sale' : 'GOLD SHOP',
+    description: String(product.description || ''),
+    sizes,
+    images: images.length ? images : [PRODUCT_IMAGE_FALLBACK],
+    stock: Number(product.stock) || 0
+  };
+}
 const TELEGRAM_USERNAME='go1d_sh0p';
 const money=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
 const $=id=>document.getElementById(id);
