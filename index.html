@@ -143,6 +143,47 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
  isolation:isolate;
 }
 
+/* GOLD SHOP — атмосферные частицы */
+.product-media{
+ position:relative;
+}
+
+.product-media::before{
+ content:"";
+ position:absolute;
+ z-index:2;
+ inset:0;
+ pointer-events:none;
+ opacity:.55;
+ background-image:
+  radial-gradient(2px 2px at 12% 85%,rgba(190,190,190,.65) 50%,transparent 100%),
+  radial-gradient(1px 1px at 28% 72%,rgba(220,220,220,.7) 50%,transparent 100%),
+  radial-gradient(2px 2px at 48% 92%,rgba(160,160,160,.55) 50%,transparent 100%),
+  radial-gradient(1px 1px at 68% 80%,rgba(230,230,230,.65) 50%,transparent 100%),
+  radial-gradient(2px 2px at 88% 68%,rgba(170,170,170,.6) 50%,transparent 100%);
+ background-size:100% 180%;
+ animation:goldCardParticles 10s linear infinite;
+}
+
+@keyframes goldCardParticles{
+ 0%{
+  background-position:0 100%;
+  opacity:.2;
+ }
+ 50%{
+  opacity:.55;
+ }
+ 100%{
+  background-position:0 0%;
+  opacity:.2;
+ }
+}
+
+@media(prefers-reduced-motion:reduce){
+ .product-media::before{
+  animation:none;
+ }
+}
 .product-media img{
  width:100%;
  height:100%;
