@@ -126,7 +126,8 @@ function formatOrderMessage(order, items) {
 
   const contactLabel =
     order.contact_method === "telegram" ? "Telegram" : "Телефон";
-
+const deliveryLabel =
+  DELIVERY_METHODS[order.delivery_method] || "Не указан";
   return [
     "🛍 НОВЫЙ ЗАКАЗ — GOLD SHOP",
     "",
@@ -140,6 +141,7 @@ function formatOrderMessage(order, items) {
     `${contactLabel}: ${order.phone}`,
     `Город: ${order.city}`,
     `Адрес: ${order.delivery_address}`,
+    `Способ доставки: ${deliveryLabel}`,
     `Комментарий: ${order.comment || "—"}`,
     "",
     `Статус: ${ORDER_STATUSES[order.status]}`
