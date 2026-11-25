@@ -181,7 +181,7 @@ bot.command("orders", async (ctx) => {
     const { data, error } = await supabase
       .from("orders")
       .select(
-        "id, customer_name, phone, contact_method, city, delivery_address, total, status, created_at"
+        "id, customer_name, phone, contact_method, delivery_method, city, delivery_address, total, status, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(10);
@@ -196,13 +196,15 @@ bot.command("orders", async (ctx) => {
     for (const order of data) {
       const contactLabel =
         order.contact_method === "telegram" ? "Telegram" : "Телефон";
-
+const deliveryLabel =
+  DELIVERY_METHODS[order.delivery_method] || "Не указан";
       const message = [
         `Заказ ${order.id}`,
         `Имя: ${order.customer_name}`,
         `${contactLabel}: ${order.phone}`,
         `Город: ${order.city}`,
         `Адрес: ${order.delivery_address}`,
+        `Способ доставки: ${deliveryLabel}`,
         `Сумма: ${money(Number(order.total))}`,
         `Статус: ${ORDER_STATUSES[order.status] || order.status}`
       ].join("\n");
