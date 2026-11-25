@@ -117,15 +117,42 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
  height:100%;
  object-fit:cover;
  transition:
-  opacity .5s ease,
-  transform 1s cubic-bezier(.2,.7,.2,1),
-  filter .5s ease;
+  opacity .7s ease,
+  transform 1.2s cubic-bezier(.2,.7,.2,1),
+  filter .7s ease;
+}
+
+.product-media .front-image{
+ position:relative;
+ z-index:1;
 }
 
 .product-media .back-image{
  position:absolute;
  inset:0;
+ z-index:2;
  opacity:0;
+ transform:scale(1.04);
+}
+
+.product-card:hover .product-media .back-image{
+ opacity:1;
+ transform:scale(1);
+}
+
+.product-card:hover .product-media .front-image{
+ transform:scale(1.06);
+ filter:brightness(.75);
+}
+
+@media(hover:none){
+ .product-card:hover .product-media .back-image{
+  opacity:0;
+ }
+ .product-card:hover .product-media .front-image{
+  transform:none;
+  filter:none;
+ }
 }
 
 .product-card:hover .product-media .front-image{
