@@ -727,7 +727,7 @@ const ORDERS_API_URL = 'https://gold-shop-api-gv5e.onrender.com/api/orders';
   vests: 'Жилеты'
 };
 
-const PRODUCT_IMAGE_FALLBACK = '';
+const PRODUCT_IMAGE_FALLBACK = 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=1000&q=85';
 
 let PRODUCTS = [];
 
@@ -1328,25 +1328,7 @@ document.addEventListener('keydown',e=>{
  },620);
 })();
 
-/* ДЕКОРАТИВНЫЕ ЧАСТИЦЫ */
-(function(){
- const layer=$('heroParticles');
- if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
- function addSpark(){
-  if(!layer||layer.childElementCount>16)return;
-  const s=document.createElement('i');
-  s.className='spark';
-  s.style.left=(8+Math.random()*84)+'%';
-  s.style.setProperty('--dur',(3.5+Math.random()*3)+'s');
-  s.style.setProperty('--drift',(-35+Math.random()*70)+'px');
-  const size=1+Math.random()*2;
-  s.style.width=size+'px';
-  s.style.height=size+'px';
-  layer.appendChild(s);
-  s.addEventListener('animationend',()=>s.remove(),{once:true});
- }
- setInterval(addSpark,420);
-})();
+
 
 loadProducts();
 </script>
