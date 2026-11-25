@@ -451,9 +451,10 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .address-hint{font-size:9px;color:#888;margin-top:7px;line-height:1.5}
 .toast{position:fixed;z-index:80;bottom:22px;left:50%;transform:translate(-50%,20px);background:#fff;color:#080808;padding:13px 18px;font-size:10px;letter-spacing:.08em;opacity:0;pointer-events:none;transition:.3s;max-width:90%;text-align:center}
 .toast.show{opacity:1;transform:translate(-50%,0)}
-.particle-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:2}
-.spark{position:absolute;bottom:-10px;width:3px;height:3px;background:#aaa;border-radius:50%;opacity:0;filter:blur(.2px);box-shadow:0 0 5px rgba(220,220,220,.55);animation:rise var(--dur,4s) linear forwards}
-@keyframes rise{0%{transform:translate3d(0,0,0) scale(.4);opacity:0}12%{opacity:.48}75%{opacity:.24}100%{transform:translate3d(var(--drift,20px),-260px,0) scale(.1);opacity:0}}
+.particle-layer{position:absolute!important;inset:0!important;overflow:hidden;pointer-events:none;z-index:6!important;isolation:isolate}
+.spark{position:absolute;bottom:-5px;width:3px;height:3px;background:#d7d7d7;border-radius:50%;opacity:0;filter:blur(.1px);box-shadow:0 0 5px 1px rgba(230,230,230,.65),0 0 11px rgba(170,170,170,.35);animation:rise var(--dur,4s) linear forwards;will-change:transform,opacity}
+.spark.spark-dark{background:#777;box-shadow:0 0 4px 1px rgba(235,235,235,.7),0 0 9px rgba(110,110,110,.65)}
+@keyframes rise{0%{transform:translate3d(0,0,0) scale(.55);opacity:0}10%{opacity:.9}35%{opacity:.78}75%{opacity:.42}100%{transform:translate3d(var(--drift,20px),var(--travel,-320px),0) scale(.15);opacity:0}}
 @media(hover:none){.quick-add{opacity:1;transform:none}.product-card:hover .product-media .back-image{opacity:0}.product-card:hover .product-media .front-image{transform:none}}
 @media(max-width:900px){.product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 10px}.nav{padding:0 4vw}.nav-left{gap:13px}.nav a{font-size:8px}.hero{min-height:620px}.promo{min-height:300px}.modal-details{padding:45px 25px}.modal-gallery{min-height:420px}}
 @media(max-width:620px){
@@ -470,6 +471,19 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .product-media .front-image,.product-media .back-image{object-fit:contain!important;transform:none!important;padding:10%!important}
 .product-card:hover .product-media .front-image{transform:none!important;filter:brightness(.96)}
 .product-card:hover .product-media .back-image{transform:none!important}
+
+/* Читаемые элементы выбора размера и таблицы */
+.size-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 12px;color:#f4f4f4}
+.size-title>span,.variant-title{color:#f4f4f4}
+.size-help{appearance:none;background:#202020!important;color:#ededed!important;border:1px solid #666!important;border-radius:3px;padding:9px 12px;font-size:9px;letter-spacing:.08em;cursor:pointer}
+.size-help:hover{background:#eee!important;color:#111!important;border-color:#eee!important}
+.sizes{gap:9px}
+.size-btn,.color-btn{background:#171717!important;color:#f1f1f1!important;border:1px solid #555!important;border-radius:3px;min-width:46px;min-height:44px}
+.size-btn.selected,.color-btn.selected{background:#f2f2f2!important;color:#101010!important;border-color:#f2f2f2!important;font-weight:700}
+.size-btn:disabled,.color-btn:disabled{background:#101010!important;color:#777!important;border-color:#333!important;opacity:.5}
+.variant-stock{color:#c0c0c0!important}
+.modal-details .modal-note{color:#aaa!important}
+
 /* GOLD SHOP — единая полировка интерфейса */
 :root{--line:rgba(255,255,255,.12);--muted:#a3a3a3}
 body{background:#090909}
@@ -1317,22 +1331,31 @@ document.addEventListener('keydown',e=>{
  }
 });
 
-/* ДЕКОРАТИВНЫЕ ЧАСТИЦЫ: общий генератор для hero и каждой карточки товара */
+/* ДЕКОРАТИВНЫЕ ЧАСТИЦЫ: заметные, но деликатные искры на каждой вещи */
 (function(){
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  function spawn(layer){
-  if(!layer||layer.childElementCount>9)return;
-  const s=document.createElement('i');s.className='spark';
-  s.style.left=(8+Math.random()*84)+'%';
-  s.style.setProperty('--dur',(3.8+Math.random()*3.2)+'s');
-  s.style.setProperty('--drift',(-24+Math.random()*48)+'px');
-  const size=1+Math.random()*2;s.style.width=size+'px';s.style.height=size+'px';
-  layer.appendChild(s);s.addEventListener('animationend',()=>s.remove(),{once:true});
+  if(!layer||layer.childElementCount>14)return;
+  const s=document.createElement('i');
+  s.className=Math.random()>.62?'spark spark-dark':'spark';
+  s.style.left=(5+Math.random()*90)+'%';
+  s.style.setProperty('--dur',(3.2+Math.random()*2.8)+'s');
+  s.style.setProperty('--drift',(-32+Math.random()*64)+'px');
+  s.style.setProperty('--travel',(-220-Math.random()*150)+'px');
+  const size=1.8+Math.random()*2.3;
+  s.style.width=size+'px';s.style.height=size+'px';
+  layer.appendChild(s);
+  s.addEventListener('animationend',()=>s.remove(),{once:true});
  }
+ function seed(){
+  const layers=[...document.querySelectorAll('.product-media .particle-layer'),$('heroParticles')].filter(Boolean);
+  layers.forEach(layer=>{if(layer.childElementCount<5){spawn(layer);spawn(layer)}});
+ }
+ seed();
  setInterval(()=>{
-  spawn($('heroParticles'));
-  document.querySelectorAll('.product-media .particle-layer').forEach(layer=>spawn(layer));
- },620);
+  const layers=[...document.querySelectorAll('.product-media .particle-layer'),$('heroParticles')].filter(Boolean);
+  layers.forEach(layer=>{spawn(layer);if(Math.random()>.55)spawn(layer)});
+ },340);
 })();
 
 
