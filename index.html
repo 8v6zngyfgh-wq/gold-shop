@@ -958,6 +958,129 @@ footer{
  .puffer-editorial-card img{aspect-ratio:16/9}
 }
 
+
+/* Premium homepage art direction — clean product photography */
+.hero{
+ background:#f6f6f3!important;
+ color:#090909;
+}
+.hero-bg{
+ background:linear-gradient(115deg,#f8f8f6 0%,#f1f1ee 58%,#fafaf8 100%)!important;
+}
+.hero:after{content:none!important;display:none!important}
+.hero-content{color:#090909!important}
+.hero-content .eyebrow{color:#555!important}
+.hero-content p{color:#555!important}
+.hero-photo-frame{
+ background:transparent!important;
+ border:0!important;
+ box-shadow:none!important;
+ overflow:visible!important;
+}
+.hero-product-photo{
+ object-fit:contain!important;
+ padding:0!important;
+ mix-blend-mode:multiply;
+}
+.hero .btn.light{
+ background:#090909!important;
+ border-color:#090909!important;
+ color:#fff!important;
+}
+.hero .btn.light:hover{
+ background:transparent!important;
+ color:#090909!important;
+}
+.promo-grid{gap:20px!important}
+.promo{
+ display:flex!important;
+ flex-direction:column!important;
+ min-height:0!important;
+ overflow:hidden;
+ background:#fff!important;
+ border:1px solid #e8e8e4;
+ box-shadow:0 12px 36px rgba(0,0,0,.045);
+ text-decoration:none;
+}
+.promo-visual{
+ position:relative!important;
+ inset:auto!important;
+ flex:none;
+ width:100%;
+ height:clamp(240px,30vw,390px);
+ background:#fff!important;
+ overflow:hidden;
+}
+.promo-visual:before{display:none!important}
+.promo:after{display:none!important;content:none!important}
+.promo-product-photo{
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ object-fit:contain!important;
+ padding:3%!important;
+ mix-blend-mode:multiply;
+}
+.promo-copy{
+ position:relative!important;
+ inset:auto!important;
+ z-index:2;
+ min-height:138px;
+ padding:22px 26px 24px!important;
+ background:#fff!important;
+ color:#090909!important;
+ border-top:1px solid #eeeeeb;
+}
+.promo-copy .eyebrow{color:#777!important}
+.promo-copy h3{
+ color:#090909!important;
+ font-size:clamp(27px,3vw,38px)!important;
+ margin:10px 0 12px!important;
+}
+.promo-copy span.eyebrow{display:inline-block;color:#555!important}
+.promo:hover .promo-visual{transform:none!important}
+.promo:hover .promo-product-photo{transform:scale(1.025)}
+.puffer-editorial{padding-top:68px!important}
+.puffer-editorial-card{background:#f4f4f1!important}
+.puffer-editorial-card img{object-fit:cover;display:block}
+.puffer-editorial-card figcaption{
+ left:18px;bottom:16px;
+ padding:9px 12px;
+ background:rgba(255,255,255,.92);
+ color:#111;
+ text-shadow:none;
+ font-size:9px;
+ letter-spacing:.16em;
+}
+@media(max-width:900px){
+ .hero-content{color:#090909!important}
+}
+@media(max-width:620px){
+ .hero{min-height:880px!important;background:#f6f6f3!important}
+ .hero-bg{background:linear-gradient(180deg,#f1f1ee 0%,#f8f8f6 100%)!important}
+ .hero-photo-frame{
+  right:7%!important;left:7%!important;top:24px!important;
+  bottom:auto!important;width:86%!important;height:285px!important;
+  opacity:1!important;
+ }
+ .hero-product-photo{width:100%;height:100%;object-fit:contain!important}
+ .hero-content{
+  max-width:100%!important;
+  padding:330px 7vw 58px!important;
+  color:#090909!important;
+ }
+ .hero h1{font-size:clamp(54px,13vw,64px)!important}
+ .hero-content p{max-width:100%;color:#555!important}
+ .promo-grid{grid-template-columns:1fr!important;gap:16px!important}
+ .promo-visual{height:250px!important}
+ .promo-copy{min-height:126px;padding:18px 20px 20px!important}
+ .promo-copy h3{font-size:30px!important}
+ .puffer-editorial{width:88%;padding:48px 0 28px!important}
+ .puffer-editorial-grid{grid-template-columns:1fr;gap:14px}
+ .puffer-editorial-card img{aspect-ratio:16/9}
+}
+
 </style>
 </head>
 
@@ -999,11 +1122,11 @@ footer{
  <div class="puffer-editorial-grid">
   <figure class="puffer-editorial-card">
    <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
-   <figcaption>01 / BLACK PUFFER</figcaption>
+   <figcaption>01 / WHITE PUFFER</figcaption>
   </figure>
   <figure class="puffer-editorial-card">
    <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модели в белых пуховиках GOLD SHOP" loading="lazy">
-   <figcaption>02 / WHITE PUFFER</figcaption>
+   <figcaption>02 / BLACK PUFFER</figcaption>
   </figure>
  </div>
 </section>
