@@ -487,7 +487,9 @@ header{background:rgba(9,9,9,.88);border-bottom-color:rgba(255,255,255,.1)}
 .product-media{border:1px solid rgba(255,255,255,.055);border-radius:2px}
 .product-media img{object-fit:contain}
 .product-media .front-image,.product-media .back-image{padding:10%;mix-blend-mode:normal}
-.product-media .particle-layer{z-index:2}
+.product-media .particle-layer{z-index:3}
+.product-tag{z-index:4}
+.product-media .favorite,.product-media .quick-add{z-index:5}
 .product-tag{border-radius:1px;letter-spacing:.16em}
 .favorite{backdrop-filter:blur(8px)}
 .quick-add{border-radius:1px;letter-spacing:.16em}
@@ -971,7 +973,7 @@ $('galleryDots').addEventListener('click',e=>{
 });
 $('colorOptions').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b||b.disabled)return;activeColor=b.dataset.color;activeSize='';activeImage=0;renderColors();renderSizes();renderGallery()});
 $('sizeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-size]');if(!b||b.disabled)return;activeSize=b.dataset.size;renderSizes()});
-$('sizeHelp').addEventListener('click',()=>toast('Точную таблицу размеров добавим для каждой модели'));
+$('sizeHelp').addEventListener('click',()=>toast('Напиши нам в Telegram — поможем подобрать размер'));
 $('modalAdd').addEventListener('click',()=>{if(!activeProduct||!activeColor||!activeSize){toast('Сначала выбери цвет и размер');return}addToCart(activeProduct.id,activeColor,activeSize);closeProduct();openCart()});
 function addToCart(id,color,size){const found=cart.find(x=>x.id===id&&x.color===color&&x.size===size);if(found)found.qty++;else cart.push({id,color,size,qty:1});saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину')}
 
