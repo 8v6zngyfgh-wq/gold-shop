@@ -1,5 +1,6 @@
 
 
+
 const express = require("express");
 const { Bot } = require("grammy");
 const { createClient } = require("@supabase/supabase-js");
@@ -16,7 +17,6 @@ for (const key of requiredEnv) {
 const app = express();
 app.disable("x-powered-by");
 
-// Разрешаем сайту GOLD SHOP обращаться к API каталога
 const allowedOrigins = new Set([
   "https://gold-shop-rnph.onrender.com"
 ]);
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
   const origin = req.get("Origin");
   res.vary("Origin");
 
-        if (origin && allowedOrigins.has(origin)) {
+  if (origin && allowedOrigins.has(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -60,15 +60,90 @@ const adminIds = new Set(
     .filter(Boolean)
 );
 
+const ORDER_STATUSES = {
+  new: "🆕 Новый",
+  confirmed: "🟡 Подтверждён",
+  shipped: "📦 Отправлен",
+  completed: "✅ Завершён",
+  cancelled: "❌ Отменён"
+};
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function isAdmin(ctx) {
   return Boolean(ctx.from && adminIds.has(String(ctx.from.id)));
+}
+
+function money(value) {
+  return new Intl.NumberFormat("ru-RU").format(value) + " ₽";
+}
+
+function statusKeyboard(orderId) {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: "🆕 Новый",
+          callback_data: `ord:${orderId}:new`
+        },
+        {
+          text: "🟡 Подтверждён",
+          callback_data: `ord:${orderId}:confirmed`
+        }
+      ],
+      [
+        {
+          text: "📦 Отправлен",
+          callback_data: `ord:${orderId}:shipped`
+        },
+        {
+          text: "✅ Завершён",
+          callback_data: `ord:${orderId}:completed`
+        }
+      ],
+      [
+        {
+          text: "❌ Отменён",
+          callback_data: `ord:${orderId}:cancelled`
+        }
+      ]
+    ]
+  };
+}
+
+function formatOrderMessage(order, items) {
+  const itemLines = items.map((item) =>
+    `• ${item.product_name} / ${item.selected_size} × ${item.quantity} — ${money(item.unit_price * item.quantity)}`
+  );
+
+  const contactLabel =
+    order.contact_method === "telegram" ? "Telegram" : "Телефон";
+
+  return [
+    "🛍 НОВЫЙ ЗАКАЗ — GOLD SHOP",
+    "",
+    `Заказ: ${order.id}`,
+    "",
+    ...itemLines,
+    "",
+    `Итого: ${money(order.total)}`,
+    "",
+    `Имя: ${order.customer_name}`,
+    `${contactLabel}: ${order.phone}`,
+    `Город: ${order.city}`,
+    `Адрес: ${order.delivery_address}`,
+    `Комментарий: ${order.comment || "—"}`,
+    "",
+    `Статус: ${ORDER_STATUSES[order.status]}`
+  ].join("\n");
 }
 
 // Telegram commands
 
 bot.command("start", async (ctx) => {
   await ctx.reply(
-    "Добро пожаловать в GOLD SHOP! Каталог и оформление заказов скоро будут доступны здесь."
+    "Добро пожаловать в GOLD SHOP! Здесь можно будет получать информацию о заказах."
   );
 });
 
@@ -83,8 +158,108 @@ bot.command("admin", async (ctx) => {
   }
 
   await ctx.reply(
-    "Доступ администратора подтверждён. Управление товарами подключим следующим этапом."
+    "Панель администратора GOLD SHOP\n\n/orders — последние 10 заказов\n\nНовые заказы будут приходить сюда автоматически."
   );
+});
+
+bot.command("orders", async (ctx) => {
+  if (!isAdmin(ctx)) {
+    await ctx.reply("У тебя нет доступа.");
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(
+        "id, customer_name, phone, contact_method, city, delivery_address, total, status, created_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) throw error;
+
+    if (!data || !data.length) {
+      await ctx.reply("Заказов пока нет.");
+      return;
+    }
+
+    for (const order of data) {
+      const contactLabel =
+        order.contact_method === "telegram" ? "Telegram" : "Телефон";
+
+      const message = [
+        `Заказ ${order.id}`,
+        `Имя: ${order.customer_name}`,
+        `${contactLabel}: ${order.phone}`,
+        `Город: ${order.city}`,
+        `Адрес: ${order.delivery_address}`,
+        `Сумма: ${money(Number(order.total))}`,
+        `Статус: ${ORDER_STATUSES[order.status] || order.status}`
+      ].join("\n");
+
+      await ctx.reply(message, {
+        reply_markup: statusKeyboard(order.id)
+      });
+    }
+  } catch (error) {
+    console.error("Orders command error:", error);
+    await ctx.reply("Не удалось загрузить заказы.");
+  }
+});
+
+// Admin status buttons
+
+bot.callbackQuery(/^ord:/, async (ctx) => {
+  if (!isAdmin(ctx)) {
+    await ctx.answerCallbackQuery({
+      text: "У тебя нет доступа.",
+      show_alert: true
+    });
+    return;
+  }
+
+  const [, orderId, status] = ctx.callbackQuery.data.split(":");
+
+  if (!UUID_PATTERN.test(orderId) || !ORDER_STATUSES[status]) {
+    await ctx.answerCallbackQuery({
+      text: "Некорректные данные заказа.",
+      show_alert: true
+    });
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .update({
+        status,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", orderId)
+      .select("id")
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      await ctx.answerCallbackQuery({
+        text: "Заказ не найден.",
+        show_alert: true
+      });
+      return;
+    }
+
+    await ctx.answerCallbackQuery({
+      text: `Статус изменён: ${ORDER_STATUSES[status]}`
+    });
+  } catch (error) {
+    console.error("Order status update error:", error);
+    await ctx.answerCallbackQuery({
+      text: "Не удалось изменить статус.",
+      show_alert: true
+    });
+  }
 });
 
 bot.catch((error) => {
@@ -126,6 +301,252 @@ app.get("/api/products", async (_req, res) => {
 
     res.status(500).json({
       error: "Не удалось загрузить товары."
+    });
+  }
+});
+
+// Create order API
+
+app.post("/api/orders", async (req, res) => {
+  let createdOrderId = null;
+
+  try {
+    const body = req.body || {};
+
+    const customerName = String(body.customer_name || "").trim();
+    const contactMethod = String(body.contact_method || "").trim();
+    const contact = String(body.contact || "").trim();
+    const city = String(body.city || "").trim();
+    const deliveryAddress = String(body.delivery_address || "").trim();
+    const comment = String(body.comment || "").trim();
+    const requestedItems = body.items;
+
+    if (customerName.length < 2 || customerName.length > 80) {
+      return res.status(400).json({
+        error: "Проверь имя. Нужно от 2 до 80 символов."
+      });
+    }
+
+    if (!["telegram", "phone"].includes(contactMethod)) {
+      return res.status(400).json({
+        error: "Выбери корректный способ связи."
+      });
+    }
+
+    if (contactMethod === "telegram") {
+      const username = contact.replace(/^@/, "");
+
+      if (!/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username)) {
+        return res.status(400).json({
+          error: "Проверь Telegram username."
+        });
+      }
+    } else {
+      const digits = contact.replace(/\D/g, "");
+
+      if (digits.length < 10 || digits.length > 15) {
+        return res.status(400).json({
+          error: "Проверь номер телефона."
+        });
+      }
+    }
+
+    if (city.length < 2 || city.length > 100) {
+      return res.status(400).json({
+        error: "Укажи корректный город."
+      });
+    }
+
+    if (deliveryAddress.length < 3 || deliveryAddress.length > 500) {
+      return res.status(400).json({
+        error: "Укажи адрес доставки или пункт выдачи."
+      });
+    }
+
+    if (comment.length > 500) {
+      return res.status(400).json({
+        error: "Комментарий слишком длинный."
+      });
+    }
+
+    if (
+      !Array.isArray(requestedItems) ||
+      requestedItems.length < 1 ||
+      requestedItems.length > 20
+    ) {
+      return res.status(400).json({
+        error: "Корзина пуста или содержит слишком много позиций."
+      });
+    }
+
+    const normalizedItems = [];
+
+    for (const item of requestedItems) {
+      const productId = String(item?.id || "").trim();
+      const size = String(item?.size || "").trim();
+      const quantity = Number(item?.qty);
+
+      if (
+        !UUID_PATTERN.test(productId) ||
+        !size ||
+        size.length > 30 ||
+        !Number.isInteger(quantity) ||
+        quantity < 1 ||
+        quantity > 10
+      ) {
+        return res.status(400).json({
+          error: "В корзине обнаружены некорректные товары."
+        });
+      }
+
+      normalizedItems.push({
+        product_id: productId,
+        selected_size: size,
+        quantity
+      });
+    }
+
+    const productIds = [
+      ...new Set(normalizedItems.map((item) => item.product_id))
+    ];
+
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("id, name, price, sizes, stock, is_active")
+      .in("id", productIds);
+
+    if (productsError) throw productsError;
+
+    const productById = new Map(
+      (products || []).map((product) => [product.id, product])
+    );
+
+    const totalQuantityByProduct = new Map();
+
+    for (const item of normalizedItems) {
+      totalQuantityByProduct.set(
+        item.product_id,
+        (totalQuantityByProduct.get(item.product_id) || 0) +
+          item.quantity
+      );
+    }
+
+    for (const [productId, quantity] of totalQuantityByProduct) {
+      const product = productById.get(productId);
+
+      if (!product || !product.is_active) {
+        return res.status(400).json({
+          error: "Один из товаров больше недоступен."
+        });
+      }
+
+      if (!Number.isInteger(Number(product.stock)) || Number(product.stock) < quantity) {
+        return res.status(409).json({
+          error: `Недостаточно остатка товара «${product.name}». Доступно: ${Math.max(0, Number(product.stock) || 0)} шт.`
+        });
+      }
+    }
+
+    const orderItems = [];
+    let total = 0;
+
+    for (const item of normalizedItems) {
+      const product = productById.get(item.product_id);
+      const availableSizes = Array.isArray(product.sizes)
+        ? product.sizes.map((value) => String(value).trim())
+        : [];
+
+      if (!availableSizes.includes(item.selected_size)) {
+        return res.status(400).json({
+          error: `Размер ${item.selected_size} товара «${product.name}» больше недоступен.`
+        });
+      }
+
+      const unitPrice = Number(product.price);
+
+      if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+        throw new Error(`Invalid price for product ${product.id}`);
+      }
+
+      total += unitPrice * item.quantity;
+
+      orderItems.push({
+        product_id: product.id,
+        product_name: product.name,
+        selected_size: item.selected_size,
+        quantity: item.quantity,
+        unit_price: unitPrice
+      });
+    }
+
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        customer_name: customerName,
+        phone: contact,
+        contact_method: contactMethod,
+        city,
+        delivery_address: deliveryAddress,
+        comment,
+        status: "new",
+        total
+      })
+      .select("id, customer_name, phone, contact_method, city, delivery_address, comment, status, total")
+      .single();
+
+    if (orderError) throw orderError;
+
+    createdOrderId = order.id;
+
+    const itemsToInsert = orderItems.map((item) => ({
+      ...item,
+      order_id: order.id
+    }));
+
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(itemsToInsert);
+
+    if (itemsError) {
+      await supabase.from("orders").delete().eq("id", order.id);
+      createdOrderId = null;
+      throw itemsError;
+    }
+
+    const notification = formatOrderMessage(
+      { ...order, total: Number(order.total) },
+      orderItems
+    );
+
+    const notifications = await Promise.allSettled(
+      [...adminIds].map((adminId) =>
+        bot.api.sendMessage(adminId, notification, {
+          reply_markup: statusKeyboard(order.id)
+        })
+      )
+    );
+
+    notifications.forEach((result) => {
+      if (result.status === "rejected") {
+        console.error("Admin notification failed:", result.reason);
+      }
+    });
+
+    return res.status(201).json({
+      ok: true,
+      order_id: order.id,
+      total: Number(order.total),
+      message: "Заказ успешно оформлен."
+    });
+  } catch (error) {
+    console.error("Create order API error:", error);
+
+    if (createdOrderId) {
+      await supabase.from("orders").delete().eq("id", createdOrderId);
+    }
+
+    return res.status(500).json({
+      error: "Не удалось сохранить заказ. Попробуй ещё раз."
     });
   }
 });
