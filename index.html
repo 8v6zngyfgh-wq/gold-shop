@@ -625,8 +625,8 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
   <label for="customerComment">Комментарий (необязательно)</label>
   <textarea id="customerComment" name="comment" maxlength="500" placeholder="Пожелания к заказу"></textarea>
 
-  <button class="btn" type="submit">Сформировать заказ в Telegram ↗</button>
-  <p class="modal-note">Не вводи данные банковской карты. Эта демоверсия не принимает оплату и не передаёт данные на сервер.</p>
+     <button class="btn" id="checkoutSubmit" type="submit">Оформить заказ</button>
+   <p class="modal-note">После оформления заказ сохранится в системе GOLD SHOP. Администратор свяжется с тобой для подтверждения.</p>
  </form>
 </div>
 
@@ -1127,60 +1127,114 @@ document.addEventListener('click',e=>{
  if(!e.target.closest('.address-wrap'))closeAddressSuggestions();
 });
 
+
 /* ОТПРАВКА ЗАКАЗА */
-$('checkoutForm').addEventListener('submit',e=>{
- e.preventDefault();
- if(!cart.length){toast('Корзина пуста');return}
+$('checkoutForm').addEventListener('submit', async e => {
+  e.preventDefault();
 
- let valid=true;
- const name=$('customerName').value.trim();
- const address=$('customerAddress').value.trim();
+  if (!cart.length) {
+    toast('Корзина пуста');
+    return;
+  }
 
- clearError('nameError');
- clearError('addressError');
+  let valid = true;
 
- if(name.length<2){
-  showError('nameError','Введи имя — минимум 2 символа.');
-  valid=false;
- }
- if(!validateContact())valid=false;
- if(address.length<5){
-  showError('addressError','Укажи город и адрес или пункт выдачи.');
-  valid=false;
- }
- if(!valid){
-  toast('Проверь поля, отмеченные ошибкой');
-  return;
- }
+  const name = $('customerName').value.trim();
+  const city = $('customerCity').value.trim();
+  const address = $('customerAddress').value.trim();
 
- const lines=cart.map(item=>{
-  const p=productById(item.id);
-  return p?`• ${p.name} / размер ${item.size} × ${item.qty} — ${money(p.price*item.qty)}`:'';
- }).filter(Boolean);
+  clearError('nameError');
+  clearError('cityError');
+  clearError('addressError');
 
- const contactValue=$('customerContact').value.trim();
- const contactLabel=contactType==='telegram'?'Telegram':'Телефон';
- const comment=$('customerComment').value.trim();
+  if (name.length < 2) {
+    showError('nameError', 'Введи имя — минимум 2 символа.');
+    valid = false;
+  }
 
- const message=[
-  'НОВЫЙ ЗАКАЗ — GOLD SHOP','',
-  ...lines,'',
-  `Итого: ${money(cartSum())}`,'',
-  `Имя: ${name}`,
-  `${contactLabel}: ${contactValue}`,
-  `Доставка: ${address}`,
-  `Комментарий: ${comment||'—'}`
- ].join('\n');
+  if (city.length < 2) {
+    showError('cityError', 'Укажи город.');
+    valid = false;
+  }
 
- const url='https://t.me/'+TELEGRAM_USERNAME+'?text='+encodeURIComponent(message);
- const newWindow=window.open(url,'_blank','noopener');
+  if (!validateContact()) {
+    valid = false;
+  }
 
- if(!newWindow){
-  toast('Разреши открытие Telegram в браузере');
- }else{
-  toast('Открой Telegram и отправь подготовленное сообщение');
- }
+  if (address.length < 3) {
+    showError('addressError', 'Укажи улицу, дом или пункт выдачи.');
+    valid = false;
+  }
+
+  if (!valid) {
+    toast('Проверь поля, отмеченные ошибкой');
+    return;
+  }
+
+  const submitButton = $('checkoutSubmit');
+  const originalText = submitButton.textContent;
+
+  const payload = {
+    customer_name: name,
+    contact_method: contactType,
+    contact: $('customerContact').value.trim(),
+    city,
+    delivery_address: address,
+    comment: $('customerComment').value.trim(),
+    items: cart.map(item => ({
+      id: item.id,
+      size: item.size,
+      qty: item.qty
+    }))
+  };
+
+  submitButton.disabled = true;
+  submitButton.textContent = 'Оформляем заказ...';
+
+  try {
+    const response = await fetch(ORDERS_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || 'Не удалось оформить заказ. Попробуй ещё раз.'
+      );
+    }
+
+    if (!result.ok || !result.order_id) {
+      throw new Error('Сервер вернул некорректный ответ.');
+    }
+
+    cart = [];
+    saveCart();
+    renderCart();
+    updateCounts();
+
+    $('checkoutForm').reset();
+    setContactType('telegram');
+
+    $('checkoutModal').classList.remove('open');
+    closeCart();
+
+    toast('Заказ №' + result.order_id.slice(0, 8) + ' оформлен!');
+
+  } catch (error) {
+    console.error('Ошибка оформления заказа:', error);
+    toast(error.message || 'Ошибка соединения с сервером.');
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalText;
+  }
 });
+
 
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){
