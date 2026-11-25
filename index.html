@@ -897,6 +897,67 @@ footer{
  .editorial-product-photo{padding:4%}
 }
 
+
+/* Editorial campaign — PUFFER SEASON */
+.puffer-editorial{
+ width:min(1400px,90%);
+ margin:0 auto;
+ padding:76px 0 42px;
+}
+.puffer-editorial-head{
+ text-align:center;
+ margin:0 auto 28px;
+}
+.puffer-editorial-head h2{
+ font:400 clamp(34px,5vw,58px)/1 var(--serif);
+ letter-spacing:.025em;
+ margin:12px 0 8px;
+}
+.puffer-editorial-head p{
+ color:var(--muted);
+ font-size:10px;
+ letter-spacing:.16em;
+ text-transform:uppercase;
+ margin:0;
+}
+.puffer-editorial-grid{
+ display:grid;
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:18px;
+}
+.puffer-editorial-card{
+ position:relative;
+ min-width:0;
+ margin:0;
+ overflow:hidden;
+ background:#171717;
+}
+.puffer-editorial-card img{
+ display:block;
+ width:100%;
+ aspect-ratio:16/9;
+ height:auto;
+ object-fit:cover;
+ object-position:center;
+ transition:transform .8s var(--ease);
+}
+.puffer-editorial-card:hover img{transform:scale(1.025)}
+.puffer-editorial-card figcaption{
+ position:absolute;
+ left:18px;
+ bottom:16px;
+ color:#fff;
+ font-size:9px;
+ letter-spacing:.18em;
+ text-shadow:0 1px 8px rgba(0,0,0,.7);
+}
+@media(max-width:620px){
+ .puffer-editorial{width:88%;padding:52px 0 28px}
+ .puffer-editorial-head{margin-bottom:20px}
+ .puffer-editorial-grid{grid-template-columns:1fr;gap:14px}
+ .puffer-editorial-card img{aspect-ratio:16/9}
+}
+
 </style>
 </head>
 
@@ -925,6 +986,25 @@ footer{
   <h1>Wear your<br>own story.</h1>
   <p>Выбирай вещи, которые говорят за тебя. Современный streetwear, внимание к деталям и собственный стиль.</p>
   <a class="btn light" href="#catalog">Смотреть коллекцию <span>↗</span></a>
+ </div>
+
+</section>
+
+<section class="puffer-editorial" aria-label="Хиты продаж — пуховики">
+ <div class="puffer-editorial-head">
+  <div class="kicker">GOLD SHOP / BEST SELLERS</div>
+  <h2>PUFFER SEASON</h2>
+  <p>Главные силуэты сезона</p>
+ </div>
+ <div class="puffer-editorial-grid">
+  <figure class="puffer-editorial-card">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
+   <figcaption>01 / BLACK PUFFER</figcaption>
+  </figure>
+  <figure class="puffer-editorial-card">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модели в белых пуховиках GOLD SHOP" loading="lazy">
+   <figcaption>02 / WHITE PUFFER</figcaption>
+  </figure>
  </div>
 </section>
 
