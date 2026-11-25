@@ -340,7 +340,7 @@ const requestedItems = body.items;
         error: "Выбери корректный способ связи."
       });
     }
-
+if (contactMethod === "telegram") {
     if (contactMethod === "telegram") {
       const username = contact.replace(/^@/, "");
 
