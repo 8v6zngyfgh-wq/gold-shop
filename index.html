@@ -681,7 +681,7 @@ const PRODUCT_IMAGE_FALLBACK =
 let PRODUCTS = [];
 
 function normalizeProduct(product) {
- const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&/^https?:\\/\\//i.test(x)):[];
+ const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))):[];
  const variants=Array.isArray(product.variants)?product.variants.map(v=>({color:String(v.color||''),images:imgs(v.images),sizes:Object.fromEntries(Object.entries(v.sizes||{}).map(([z,q])=>[z,Math.max(0,Number(q)||0)]))})):[],first=variants[0],images=imgs(product.images);
  const category=String(product.category||'').toLowerCase(),price=Number(product.price)||0,oldPrice=Number(product.old_price)||null;
  return {id:String(product.id),name:String(product.name||'Товар GOLD SHOP'),category,categoryLabel:CATEGORY_LABELS[category]||'GOLD SHOP',price,oldPrice,tag:oldPrice&&oldPrice>price?'Sale':'GOLD SHOP',description:String(product.description||''),variants,sizes:[...new Set(variants.flatMap(v=>Object.entries(v.sizes).filter(([,q])=>q>0).map(([z])=>z)))],images:first?.images?.length?first.images:(images.length?images:[PRODUCT_IMAGE_FALLBACK])};
