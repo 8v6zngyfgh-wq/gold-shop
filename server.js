@@ -121,7 +121,7 @@ function statusKeyboard(orderId) {
 
 function formatOrderMessage(order, items) {
   const itemLines = items.map((item) =>
-    `• ${item.product_name} / ${item.selected_size} × ${item.quantity} — ${money(item.unit_price * item.quantity)}`
+    `• ${item.product_name} / ${item.selected_color} / ${item.selected_size} × ${item.quantity} — ${money(item.unit_price * item.quantity)}`
   );
 
   const contactLabel =
@@ -297,7 +297,7 @@ app.get("/api/products", async (_req, res) => {
     const { data, error } = await supabase
       .from("products")
       .select(
-        "id, name, slug, description, price, old_price, category, images, sizes, stock"
+        "id, name, slug, description, price, old_price, category, images, sizes, variants"
       )
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
@@ -400,11 +400,13 @@ if (contactMethod === "telegram") {
 
     for (const item of requestedItems) {
       const productId = String(item?.id || "").trim();
+      const color = String(item?.color || "").trim();
       const size = String(item?.size || "").trim();
       const quantity = Number(item?.qty);
 
       if (
         !UUID_PATTERN.test(productId) ||
+        !color || color.length > 40 ||
         !size ||
         size.length > 30 ||
         !Number.isInteger(quantity) ||
@@ -418,6 +420,7 @@ if (contactMethod === "telegram") {
 
       normalizedItems.push({
         product_id: productId,
+        selected_color: color,
         selected_size: size,
         quantity
       });
@@ -429,7 +432,7 @@ if (contactMethod === "telegram") {
 
     const { data: products, error: productsError } = await supabase
       .from("products")
-      .select("id, name, price, sizes, stock, is_active")
+      .select("id, name, price, variants, is_active")
       .in("id", productIds);
 
     if (productsError) throw productsError;
@@ -438,47 +441,17 @@ if (contactMethod === "telegram") {
       (products || []).map((product) => [product.id, product])
     );
 
-    const totalQuantityByProduct = new Map();
-
-    for (const item of normalizedItems) {
-      totalQuantityByProduct.set(
-        item.product_id,
-        (totalQuantityByProduct.get(item.product_id) || 0) +
-          item.quantity
-      );
-    }
-
-    for (const [productId, quantity] of totalQuantityByProduct) {
-      const product = productById.get(productId);
-
-      if (!product || !product.is_active) {
-        return res.status(400).json({
-          error: "Один из товаров больше недоступен."
-        });
-      }
-
-      if (!Number.isInteger(Number(product.stock)) || Number(product.stock) < quantity) {
-        return res.status(409).json({
-          error: `Недостаточно остатка товара «${product.name}». Доступно: ${Math.max(0, Number(product.stock) || 0)} шт.`
-        });
-      }
-    }
-
     const orderItems = [];
     let total = 0;
-
     for (const item of normalizedItems) {
       const product = productById.get(item.product_id);
-      const availableSizes = Array.isArray(product.sizes)
-        ? product.sizes.map((value) => String(value).trim())
-        : [];
-
-      if (!availableSizes.includes(item.selected_size)) {
-        return res.status(400).json({
-          error: `Размер ${item.selected_size} товара «${product.name}» больше недоступен.`
-        });
-      }
-
+      if (!product || !product.is_active) return res.status(400).json({error:"Один из товаров больше недоступен."});
+      const variant = (Array.isArray(product.variants)?product.variants:[]).find(v=>String(v.color||"").trim()===item.selected_color);
+      const available = Number(variant?.sizes?.[item.selected_size] || 0);
+      if (!variant || !Number.isInteger(available) || available < item.quantity) return res.status(409).json({error:`Недостаточно остатка: ${product.name}, ${item.selected_color}, размер ${item.selected_size}. Доступно: ${Math.max(0,available)} шт.`});
+    }
+    for (const item of normalizedItems) {
+      const product = productById.get(item.product_id);
       const unitPrice = Number(product.price);
 
       if (!Number.isFinite(unitPrice) || unitPrice < 0) {
@@ -490,6 +463,7 @@ if (contactMethod === "telegram") {
       orderItems.push({
         product_id: product.id,
         product_name: product.name,
+        selected_color: item.selected_color,
         selected_size: item.selected_size,
         quantity: item.quantity,
         unit_price: unitPrice
@@ -532,7 +506,15 @@ if (contactMethod === "telegram") {
       createdOrderId = null;
       throw itemsError;
     }
-
+    const { error: reserveError } = await supabase.rpc("reserve_product_variants", {
+      p_items: normalizedItems.map(item => ({product_id:item.product_id,color:item.selected_color,size:item.selected_size,quantity:item.quantity}))
+    });
+    if (reserveError) {
+      await supabase.from("orders").delete().eq("id", order.id);
+      createdOrderId = null;
+      if (String(reserveError.message||"").toLowerCase().includes("insufficient")) return res.status(409).json({error:"Остаток изменился во время оформления. Обнови страницу и попробуй снова."});
+      throw reserveError;
+    }
     const notification = formatOrderMessage(
       { ...order, total: Number(order.total) },
       orderItems
