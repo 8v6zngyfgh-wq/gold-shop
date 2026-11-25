@@ -465,6 +465,11 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
  .checkout{padding:28px 22px}.checkout h2{font-size:34px}
 }
 
+
+/* Изображение товара всегда целиком: без hover-зумирования и обрезки */
+.product-media .front-image,.product-media .back-image{object-fit:contain!important;transform:none!important;padding:10%!important}
+.product-card:hover .product-media .front-image{transform:none!important;filter:brightness(.96)}
+.product-card:hover .product-media .back-image{transform:none!important}
 /* GOLD SHOP — единая полировка интерфейса */
 :root{--line:rgba(255,255,255,.12);--muted:#a3a3a3}
 body{background:#090909}
@@ -727,7 +732,7 @@ const ORDERS_API_URL = 'https://gold-shop-api-gv5e.onrender.com/api/orders';
   vests: 'Жилеты'
 };
 
-const PRODUCT_IMAGE_FALLBACK = 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?auto=format&fit=crop&w=1000&q=85';
+const PRODUCT_IMAGE_FALLBACK = '';
 
 let PRODUCTS = [];
 
