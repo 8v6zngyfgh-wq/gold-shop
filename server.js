@@ -710,7 +710,7 @@ app.get("/api/public/shipments", async (_req, res) => {
     res.json({ shipments: (orders || []).map(o => ({
       code: String(o.id).slice(0, 8).toUpperCase(), city: o.city,
       delivery_method: o.delivery_method, status: o.status,
-      tracking_number: o.tracking_number, tracking_url: o.tracking_url || null,
+      
       created_at: o.created_at, items: byOrder.get(o.id) || []
     })) });
   } catch (error) {
