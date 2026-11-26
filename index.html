@@ -1127,6 +1127,179 @@ footer{
  .editorial-copy{padding:68px 8vw!important}
 }
 
+
+/* GOLD SHOP — premium product catalogue */
+.catalog{
+ background:#fff!important;
+ color:#111!important;
+ padding:84px max(5vw,24px) 104px!important;
+}
+.catalog .kicker{color:#777!important}
+.catalog .filters{margin:30px 0 34px}
+.catalog .filter-list{gap:7px}
+.catalog .filter{
+ background:#fff!important;
+ color:#555!important;
+ border:1px solid #deded9!important;
+ border-radius:0!important;
+ padding:11px 15px!important;
+ font-size:9px!important;
+ letter-spacing:.12em;
+ transition:background .22s ease,color .22s ease,border-color .22s ease;
+}
+.catalog .filter.active,
+.catalog .filter:hover{
+ background:#111!important;
+ color:#fff!important;
+ border-color:#111!important;
+}
+.catalog .sort-select{
+ background:#fff!important;
+ color:#222!important;
+ border:0!important;
+ border-bottom:1px solid #bdbdb7!important;
+ border-radius:0!important;
+ padding:10px 22px 10px 2px!important;
+}
+.catalog .sort-select option{background:#fff;color:#111}
+.catalog .product-grid{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:42px 18px!important;
+}
+.catalog .product-card{
+ background:#fff!important;
+ border:0!important;
+ transform:none!important;
+ transition:opacity .45s ease!important;
+}
+.catalog .product-card:hover{transform:none!important}
+.catalog .product-media{
+ aspect-ratio:4/5!important;
+ background:#f3f3f0!important;
+ border:0!important;
+ overflow:hidden;
+ isolation:isolate;
+}
+.catalog .product-media:after{display:none!important;content:none!important}
+.catalog .product-media .front-image,
+.catalog .product-media .back-image{
+ object-fit:contain!important;
+ padding:3%!important;
+ mix-blend-mode:multiply;
+ filter:none!important;
+ transition:opacity .45s ease,transform .7s cubic-bezier(.2,.7,.2,1)!important;
+}
+.catalog .product-media .front-image{z-index:1}
+.catalog .product-media .back-image{z-index:2}
+.catalog .product-card:hover .product-media .front-image{transform:scale(1.025)!important;filter:none!important}
+.catalog .product-card:hover .product-media .back-image{transform:scale(1)!important}
+.catalog .product-media .particle-layer{z-index:2;pointer-events:none;opacity:.5}
+.catalog .product-tag{
+ top:14px!important;
+ left:14px!important;
+ padding:7px 10px!important;
+ background:#111!important;
+ color:#fff!important;
+ font-size:8px!important;
+ letter-spacing:.14em;
+}
+.catalog .favorite{
+ top:12px!important;
+ right:12px!important;
+ width:36px!important;
+ height:36px!important;
+ border:1px solid #deded9!important;
+ background:rgba(255,255,255,.94)!important;
+ color:#111!important;
+ box-shadow:0 2px 10px rgba(0,0,0,.04);
+}
+.catalog .favorite.active{
+ background:#111!important;
+ color:#fff!important;
+ border-color:#111!important;
+}
+.catalog .quick-add{
+ left:12px!important;
+ right:12px!important;
+ bottom:12px!important;
+ padding:15px 12px!important;
+ background:rgba(255,255,255,.96)!important;
+ color:#111!important;
+ border:1px solid rgba(0,0,0,.1)!important;
+ font-size:9px!important;
+ letter-spacing:.16em;
+ opacity:0;
+ transform:translateY(8px);
+ backdrop-filter:blur(12px);
+}
+.catalog .product-card:hover .quick-add{opacity:1;transform:translateY(0)}
+.catalog .quick-add:hover{background:#111!important;color:#fff!important}
+.catalog .product-info{
+ display:flex!important;
+ align-items:flex-start!important;
+ justify-content:space-between!important;
+ gap:12px!important;
+ padding:16px 1px 0!important;
+}
+.catalog .product-copy{min-width:0}
+.catalog .product-name{
+ color:#111!important;
+ font:400 clamp(15px,1.35vw,19px)/1.2 var(--serif)!important;
+ margin:0 0 7px!important;
+ letter-spacing:-.015em;
+}
+.catalog .product-card:hover .product-name{color:#111!important}
+.catalog .product-meta{
+ color:#888!important;
+ font-size:8px!important;
+ letter-spacing:.15em;
+}
+.catalog .product-sizes{
+ margin-top:8px;
+ color:#777;
+ font-size:8px;
+ letter-spacing:.12em;
+ line-height:1.5;
+}
+.catalog .price{
+ color:#111!important;
+ font-size:12px!important;
+ font-weight:600;
+ letter-spacing:.02em;
+ white-space:nowrap;
+ padding-top:2px!important;
+ font-variant-numeric:tabular-nums;
+}
+.catalog .empty-state{
+ color:#777!important;
+ padding:70px 10px!important;
+}
+@media(max-width:900px){
+ .catalog .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:34px 14px!important}
+ .catalog{padding:68px 5vw 84px!important}
+}
+@media(max-width:620px){
+ .catalog{padding:58px 4.5vw 72px!important}
+ .catalog .filters{align-items:flex-start;gap:18px;margin:24px 0 26px}
+ .catalog .filter-list{gap:6px}
+ .catalog .filter{padding:10px 11px!important;font-size:8px!important}
+ .catalog .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:28px 10px!important}
+ .catalog .product-media{aspect-ratio:4/5!important}
+ .catalog .product-media .front-image,
+ .catalog .product-media .back-image{padding:2%!important}
+ .catalog .product-info{gap:7px!important;padding:12px 1px 0!important}
+ .catalog .product-name{font-size:15px!important;line-height:1.18!important}
+ .catalog .product-meta{font-size:7px!important;letter-spacing:.11em}
+ .catalog .product-sizes{font-size:7px;margin-top:6px}
+ .catalog .price{font-size:10px!important}
+ .catalog .favorite{width:32px!important;height:32px!important;top:8px!important;right:8px!important}
+ .catalog .quick-add{display:none!important}
+}
+@media(hover:none){
+ .catalog .product-card:hover .product-media .back-image{opacity:0!important}
+ .catalog .product-card:hover .product-media .front-image{transform:none!important}
+}
+
 </style>
 </head>
 
@@ -1514,14 +1687,15 @@ function renderProducts(){
     <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy">
     <div class="particle-layer" aria-hidden="true"></div>
     <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
-    <span class="product-tag">${escapeHtml(p.tag||'GOLD SHOP')}</span>
+    ${p.tag&&p.tag!=='GOLD SHOP'?'<span class="product-tag">'+escapeHtml(p.tag)+'</span>':''}
     <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
     <button class="quick-add" data-quick="${escapeAttr(p.id)}">Выбрать размер</button>
    </div>
    <div class="product-info">
-    <div>
+    <div class="product-copy">
      <p class="product-name">${escapeHtml(p.name)}</p>
      <div class="product-meta">${escapeHtml(p.categoryLabel)}</div>
+     ${p.sizes.length?'<div class="product-sizes">РАЗМЕРЫ · '+p.sizes.map(escapeHtml).join(' / ')+'</div>':''}
     </div>
     <div class="price">${money(p.price)}</div>
    </div>
