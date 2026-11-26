@@ -1890,6 +1890,131 @@ input::placeholder, textarea::placeholder{
 }
 
 
+
+/* GOLD SHOP — bold split campaign hero */
+.hero{
+ min-height: min(760px,78vw)!important;
+ min-height:clamp(590px,76vh,790px)!important;
+ display:flex!important;
+ align-items:center!important;
+ background:#f5f5f2!important;
+ overflow:hidden!important;
+}
+.hero-bg{
+ background:#f5f5f2!important;
+}
+.hero-bg:before{
+ content:"";
+ position:absolute!important;
+ display:block!important;
+ inset:0 0 0 auto!important;
+ width:43%!important;
+ height:100%!important;
+ background:linear-gradient(145deg,#242424 0%,#080808 72%)!important;
+ clip-path:polygon(13% 0,100% 0,100% 100%,0 100%)!important;
+ opacity:1!important;
+}
+.hero-bg:after{
+ content:"GOLD SHOP  /  WINTER DROP"!important;
+ position:absolute!important;
+ right:5.5vw!important;
+ bottom:34px!important;
+ color:rgba(255,255,255,.62)!important;
+ font:8px Arial,sans-serif!important;
+ letter-spacing:.28em!important;
+}
+.hero:before{
+ content:"GOLD"!important;
+ position:absolute!important;
+ z-index:1!important;
+ right:2.2vw!important;
+ top:50%!important;
+ transform:translateY(-50%) rotate(-90deg)!important;
+ transform-origin:center!important;
+ font:italic clamp(105px,15vw,215px)/.8 Georgia,serif!important;
+ letter-spacing:-.075em!important;
+ color:transparent!important;
+ -webkit-text-stroke:1px rgba(255,255,255,.24)!important;
+ white-space:nowrap!important;
+ pointer-events:none!important;
+}
+.hero-content{
+ width:57%!important;
+ max-width:760px!important;
+ margin:0!important;
+ padding:90px 0 90px 9vw!important;
+ color:#101010!important;
+}
+.hero-content .eyebrow{
+ color:#555!important;
+ font-size:9px!important;
+ letter-spacing:.25em!important;
+}
+.hero-content .eyebrow:before{background:#111!important;width:38px!important}
+.hero h1{
+ color:#090909!important;
+ font-size:clamp(64px,9.2vw,124px)!important;
+ line-height:.86!important;
+ letter-spacing:-.065em!important;
+ margin:28px 0 24px!important;
+}
+.hero-content p{
+ color:#626262!important;
+ font-size:12px!important;
+ line-height:1.9!important;
+ max-width:350px!important;
+ margin-bottom:30px!important;
+}
+.hero .btn.light{
+ background:#090909!important;
+ color:#fff!important;
+ border:1px solid #090909!important;
+ min-height:54px!important;
+ padding:0 26px!important;
+}
+.hero .btn.light:hover{background:transparent!important;color:#090909!important}
+@media(max-width:900px){
+ .hero-content{width:62%!important;padding-left:7vw!important}
+ .hero-bg:before{width:40%!important}
+ .hero:before{right:-3vw!important;font-size:17vw!important}
+ .hero h1{font-size:clamp(60px,10vw,92px)!important}
+}
+@media(max-width:620px){
+ .hero{
+  min-height:690px!important;
+  align-items:flex-start!important;
+ }
+ .hero-bg:before{
+  inset:auto 0 0 auto!important;
+  width:100%!important;
+  height:34%!important;
+  clip-path:polygon(0 16%,100% 0,100% 100%,0 100%)!important;
+ }
+ .hero-bg:after{
+  right:7vw!important;
+  bottom:20px!important;
+  font-size:7px!important;
+ }
+ .hero:before{
+  top:auto!important;
+  bottom:4%!important;
+  right:7vw!important;
+  transform:none!important;
+  font-size:clamp(76px,22vw,130px)!important;
+  -webkit-text-stroke:1px rgba(255,255,255,.24)!important;
+ }
+ .hero-content{
+  width:100%!important;
+  max-width:100%!important;
+  padding:96px 7vw 260px!important;
+ }
+ .hero h1{
+  font-size:clamp(62px,16vw,82px)!important;
+  margin:24px 0 19px!important;
+ }
+ .hero-content p{max-width:310px!important;font-size:11px!important}
+}
+
 /* GOLD SHOP — visual refresh / editorial storefront */
 .hero{min-height:clamp(620px,74vh,820px)!important;position:relative!important;isolation:isolate;overflow:hidden}
 .hero:before{content:"GS";position:absolute;z-index:0;right:7.5vw;top:50%;transform:translateY(-54%);font:italic clamp(250px,39vw,570px)/.8 Georgia,serif;letter-spacing:-.12em;color:transparent;-webkit-text-stroke:1px rgba(15,15,15,.13);pointer-events:none;user-select:none}
