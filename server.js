@@ -191,7 +191,18 @@ bot.command("admin", async (ctx) => {
   }
 
   await ctx.reply(
-    "Панель администратора GOLD SHOP\n\n/orders — последние 10 заказов\n\nНовые заказы будут приходить сюда автоматически."
+    "Панель администратора GOLD SHOP\n\nОткрой управление товарами:",
+    {
+      reply_markup: {
+        inline_keyboard: [[{
+          text: "Открыть админ-панель",
+          web_app: { url: `${WEB_APP_URL}/admin.html` }
+        }], [{
+          text: "Последние заказы",
+          callback_data: "admin:orders"
+        }]]
+      }
+    }
   );
 });
 
@@ -334,7 +345,7 @@ function verifyTelegramInitData(initData) {
   const dataCheckString = [...params.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}=${value}`)
-    .join("\\n");
+    .join("\n");
 
   const secretKey = createHmac("sha256", "WebAppData")
     .update(process.env.BOT_TOKEN)
