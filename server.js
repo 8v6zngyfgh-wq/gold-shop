@@ -153,7 +153,7 @@ const deliveryLabel =
 const WEB_APP_URL = (
   process.env.WEB_APP_URL ||
   "https://gold-shop-rnph.onrender.com"
-).replace(/\\/+$/, "");
+).replace(/\/+$/, "");
 
 const shopKeyboard = {
   inline_keyboard: [[
