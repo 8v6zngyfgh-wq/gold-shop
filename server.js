@@ -96,6 +96,58 @@ const supabase = createClient(
   }
 );
 
+// Прокси публичных фотографий: браузер загружает изображения через API GOLD SHOP,
+// а сервер получает их из Supabase Storage. Разрешён только публичный Storage этого проекта.
+const supabaseStorageOrigin = new URL(process.env.SUPABASE_URL).origin;
+
+app.get("/api/image-proxy", rateLimit({ windowMs: 60_000, max: 180, scope: "image-proxy" }), async (req, res) => {
+  try {
+    const rawUrl = typeof req.query.url === "string" ? req.query.url : "";
+    if (!rawUrl || rawUrl.length > 2048) {
+      return res.status(400).json({ error: "Некорректный адрес изображения." });
+    }
+
+    const target = new URL(rawUrl);
+    if (
+      target.origin !== supabaseStorageOrigin ||
+      !target.pathname.startsWith("/storage/v1/object/public/")
+    ) {
+      return res.status(403).json({ error: "Источник изображения не разрешён." });
+    }
+
+    const upstream = await fetch(target, {
+      method: "GET",
+      redirect: "error",
+      signal: AbortSignal.timeout(15_000)
+    });
+
+    if (!upstream.ok) {
+      return res.sendStatus(upstream.status === 404 ? 404 : 502);
+    }
+
+    const contentType = upstream.headers.get("content-type") || "";
+    if (!contentType.toLowerCase().startsWith("image/")) {
+      return res.status(502).json({ error: "Источник вернул файл, который не является изображением." });
+    }
+
+    const bytes = Buffer.from(await upstream.arrayBuffer());
+    if (!bytes.length || bytes.length > 15 * 1024 * 1024) {
+      return res.status(502).json({ error: "Некорректный размер изображения." });
+    }
+
+    res.set({
+      "Content-Type": contentType,
+      "Content-Length": String(bytes.length),
+      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+      "X-Content-Type-Options": "nosniff"
+    });
+    return res.status(200).send(bytes);
+  } catch (error) {
+    console.error("Image proxy error:", error);
+    return res.status(502).json({ error: "Не удалось загрузить фотографию." });
+  }
+});
+
 const adminIds = new Set(
   (process.env.ADMIN_IDS || "")
     .split(",")
