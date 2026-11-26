@@ -148,11 +148,35 @@ const deliveryLabel =
   ].join("\n");
 }
 
+// Telegram shop entry point
+
+const WEB_APP_URL = (
+  process.env.WEB_APP_URL ||
+  "https://gold-shop-rnph.onrender.com"
+).replace(/\\/+$/, "");
+
+const shopKeyboard = {
+  inline_keyboard: [[
+    {
+      text: "Открыть GOLD SHOP",
+      web_app: { url: WEB_APP_URL }
+    }
+  ]]
+};
+
 // Telegram commands
 
 bot.command("start", async (ctx) => {
   await ctx.reply(
-    "Добро пожаловать в GOLD SHOP! Здесь можно будет получать информацию о заказах."
+    "Добро пожаловать в GOLD SHOP.\n\nОткрой каталог, выбери товар и оформи заказ прямо здесь.",
+    { reply_markup: shopKeyboard }
+  );
+});
+
+bot.command("shop", async (ctx) => {
+  await ctx.reply(
+    "Каталог GOLD SHOP:",
+    { reply_markup: shopKeyboard }
   );
 });
 
@@ -604,6 +628,15 @@ const server = app.listen(port, "0.0.0.0", async () => {
     console.log(
       `Telegram bot initialized: @${bot.botInfo.username}`
     );
+
+    await bot.api.setChatMenuButton({
+      menu_button: {
+        type: "web_app",
+        text: "Магазин",
+        web_app: { url: WEB_APP_URL }
+      }
+    });
+    console.log("Telegram shop menu button configured.");
   } catch (error) {
     console.error("Failed to initialize Telegram bot:", error);
     return;
