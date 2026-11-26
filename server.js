@@ -16,6 +16,44 @@ for (const key of requiredEnv) {
 
 const app = express();
 app.disable("x-powered-by");
+// Render terminates TLS at its edge and forwards the client address.
+app.set("trust proxy", 1);
+
+// Baseline browser security headers for the JSON API.
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("Referrer-Policy", "no-referrer");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+  if (req.secure) res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  next();
+});
+
+const rateLimitBuckets = new Map();
+function rateLimit({ windowMs, max, scope }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const address = String(req.ip || req.socket?.remoteAddress || "unknown");
+    const key = scope + ":" + address;
+    let bucket = rateLimitBuckets.get(key);
+    if (!bucket || now - bucket.startedAt >= windowMs) {
+      bucket = { startedAt: now, count: 0 };
+      rateLimitBuckets.set(key, bucket);
+    }
+    bucket.count += 1;
+    if (rateLimitBuckets.size > 10000) {
+      for (const [entryKey, entry] of rateLimitBuckets) {
+        if (now - entry.startedAt >= windowMs) rateLimitBuckets.delete(entryKey);
+      }
+    }
+    if (bucket.count > max) {
+      const retrySeconds = Math.max(1, Math.ceil((windowMs - (now - bucket.startedAt)) / 1000));
+      res.setHeader("Retry-After", String(retrySeconds));
+      return res.status(429).json({ error: "Слишком много запросов. Подожди немного и попробуй снова." });
+    }
+    next();
+  };
+}
 
 const allowedOrigins = new Set([
   "https://gold-shop-rnph.onrender.com"
@@ -38,7 +76,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "128kb" }));
+
+// Lightweight per-IP abuse protection. Limits are scoped by endpoint, not order ID.
 
 const bot = new Bot(process.env.BOT_TOKEN);
 
@@ -388,7 +428,7 @@ function requireMiniAppAdmin(req, res, next) {
 
 // Admin product management API
 
-app.get("/api/admin/products", requireMiniAppAdmin, async (_req, res) => {
+app.get("/api/admin/products", rateLimit({ windowMs: 60_000, max: 60, scope: "admin" }), requireMiniAppAdmin, async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from("products")
@@ -736,7 +776,7 @@ app.get("/api/public/reviews", async (_req, res) => {
   }
 });
 
-app.get("/api/orders/:id", async (req, res) => {
+app.get("/api/orders/:id", rateLimit({ windowMs: 10 * 60_000, max: 15, scope: "order-lookup" }), async (req, res) => {
   const orderId = String(req.params.id || "");
   const contact = String(req.query.contact || "").trim();
   if (!UUID_PATTERN.test(orderId) || contact.length < 5 || contact.length > 100) {
@@ -747,7 +787,14 @@ app.get("/api/orders/:id", async (req, res) => {
       .select("id, customer_name, phone, contact_method, delivery_method, city, status, total, tracking_number, tracking_url, created_at")
       .eq("id", orderId).maybeSingle();
     if (error) throw error;
-    if (!order || String(order.phone || "").toLowerCase() !== contact.toLowerCase()) {
+    const normalizeContact = value => String(value || "").trim().replace(/^@/, "").toLowerCase();
+    const suppliedContact = order?.contact_method === "phone"
+      ? contact.replace(/\D/g, "")
+      : normalizeContact(contact);
+    const storedContact = order?.contact_method === "phone"
+      ? String(order.phone || "").replace(/\D/g, "")
+      : normalizeContact(order?.phone);
+    if (!order || !suppliedContact || suppliedContact !== storedContact) {
       return res.status(404).json({ error: "Заказ не найден. Проверь номер и контакт." });
     }
     const { data: items, error: itemsError } = await supabase.from("order_items")
@@ -786,7 +833,7 @@ app.patch("/api/admin/orders/:id/tracking", requireMiniAppAdmin, async (req, res
   }
 });
 
-app.post("/api/admin/reviews", requireMiniAppAdmin, async (req, res) => {
+app.post("/api/admin/reviews", rateLimit({ windowMs: 60_000, max: 10, scope: "admin-reviews" }), requireMiniAppAdmin, async (req, res) => {
   const orderId = String(req.body?.order_id || "");
   const displayName = String(req.body?.display_name || "").trim();
   const reviewText = String(req.body?.review_text || "").trim();
@@ -818,7 +865,7 @@ app.post("/api/admin/reviews", requireMiniAppAdmin, async (req, res) => {
 
 // Create order API
 
-app.post("/api/orders", async (req, res) => {
+app.post("/api/orders", rateLimit({ windowMs: 10 * 60_000, max: 10, scope: "create-order" }), async (req, res) => {
   let createdOrderId = null;
 
   try {
@@ -1074,7 +1121,7 @@ function safeEqual(left, right) {
 
 // Telegram webhook
 
-app.post("/telegram/webhook", async (req, res) => {
+app.post("/telegram/webhook", rateLimit({ windowMs: 60_000, max: 120, scope: "telegram-webhook" }), async (req, res) => {
   const expectedSecret = process.env.WEBHOOK_SECRET;
   const receivedSecret = req.get(
     "X-Telegram-Bot-Api-Secret-Token"
