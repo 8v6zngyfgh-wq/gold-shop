@@ -252,28 +252,81 @@ const WEB_APP_URL = (
 ).replace(/\/+$/, "");
 
 const shopKeyboard = {
-  inline_keyboard: [[
-    {
-      text: "Открыть GOLD SHOP",
-      web_app: { url: WEB_APP_URL }
-    }
-  ]]
+  inline_keyboard: [
+    [{ text: "✦ ОТКРЫТЬ КАТАЛОГ", web_app: { url: WEB_APP_URL } }],
+    [{ text: "TELEGRAM-КАНАЛ GOLD SHOP", url: "https://t.me/go1d_sh0p" }],
+    [{ text: "❔ ПОМОЩЬ И ИНФОРМАЦИЯ", callback_data: "shop:help" }]
+  ]
 };
 
-// Telegram commands
+const welcomeText = [
+  "<b>G O L D  S H O P</b>",
+  "<i>PREMIUM STREETWEAR</i>",
+  "",
+  "Добро пожаловать в официальный магазин GOLD SHOP.",
+  "",
+  "Здесь ты можешь:",
+  "✦ посмотреть каталог и фотографии",
+  "✦ выбрать размер и добавить товар в корзину",
+  "✦ оформить заказ и следить за его статусом",
+  "",
+  "Нажми кнопку ниже, чтобы перейти в магазин."
+].join("\\n");
+
+const helpText = [
+  "<b>ПОМОЩЬ GOLD SHOP</b>",
+  "",
+  "✦ <b>Каталог</b> — открой магазин кнопкой «Открыть каталог».",
+  "✦ <b>Заказ</b> — выбери товар, размер и оформи заявку через корзину.",
+  "✦ <b>Оплата</b> — онлайн-оплата пока не подключена. Менеджер отдельно подтвердит наличие, доставку и итоговую сумму до оплаты.",
+  "✦ <b>Доставка</b> — доступные варианты отображаются при оформлении. Стоимость и детали подтверждаются отдельно.",
+  "✦ <b>Статус заказа</b> — информация об изменениях появится после обработки заказа менеджером.",
+  "",
+  "Новости и обновления магазина публикуются в нашем Telegram-канале."
+].join("\\n");
 
 bot.command("start", async (ctx) => {
-  await ctx.reply(
-    "Добро пожаловать в GOLD SHOP.\n\nОткрой каталог, выбери товар и оформи заказ прямо здесь.",
-    { reply_markup: shopKeyboard }
-  );
+  await ctx.reply(welcomeText, {
+    parse_mode: "HTML",
+    reply_markup: shopKeyboard
+  });
 });
 
 bot.command("shop", async (ctx) => {
+  await ctx.reply("<b>GOLD SHOP</b> — каталог актуальных товаров:", {
+    parse_mode: "HTML",
+    reply_markup: shopKeyboard
+  });
+});
+
+bot.command("help", async (ctx) => {
+  await ctx.reply(helpText, {
+    parse_mode: "HTML",
+    reply_markup: shopKeyboard
+  });
+});
+
+bot.command("delivery", async (ctx) => {
   await ctx.reply(
-    "Каталог GOLD SHOP:",
-    { reply_markup: shopKeyboard }
+    "<b>ДОСТАВКА И ОПЛАТА</b>\\n\\nДоступные способы доставки отображаются при оформлении заказа. Стоимость и сроки менеджер подтвердит отдельно.\\n\\nОнлайн-оплата пока не подключена. Не переводи деньги до подтверждения заказа и итоговой суммы менеджером.",
+    { parse_mode: "HTML", reply_markup: shopKeyboard }
   );
+});
+
+bot.command("channel", async (ctx) => {
+  await ctx.reply("Подписывайся на канал GOLD SHOP — там публикуются новости и обновления магазина.", {
+    reply_markup: {
+      inline_keyboard: [[{ text: "ОТКРЫТЬ GOLD SHOP", url: "https://t.me/go1d_sh0p" }]]
+    }
+  });
+});
+
+bot.callbackQuery("shop:help", async (ctx) => {
+  await ctx.answerCallbackQuery();
+  await ctx.reply(helpText, {
+    parse_mode: "HTML",
+    reply_markup: shopKeyboard
+  });
 });
 
 bot.command("id", async (ctx) => {
@@ -1329,7 +1382,14 @@ const server = app.listen(port, "0.0.0.0", async () => {
         web_app: { url: WEB_APP_URL }
       }
     });
-    console.log("Telegram shop menu button configured.");
+    await bot.api.setMyCommands([
+      { command: "start", description: "Главное меню GOLD SHOP" },
+      { command: "shop", description: "Открыть каталог магазина" },
+      { command: "help", description: "Помощь и ответы на вопросы" },
+      { command: "delivery", description: "Доставка и оплата" },
+      { command: "channel", description: "Наш Telegram-канал" }
+    ]);
+    console.log("Telegram shop menu button and commands configured.");
   } catch (error) {
     console.error("Failed to initialize Telegram bot:", error);
     return;
