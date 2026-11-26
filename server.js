@@ -754,7 +754,9 @@ app.get("/api/orders/:id", async (req, res) => {
       .select("product_name, selected_color, selected_size, quantity").eq("order_id", orderId);
     if (itemsError) throw itemsError;
     res.set("Cache-Control", "no-store");
-    res.json({ order: { ...order, items: items || [] } });
+    // The phone is used only to verify ownership; never echo it in the public response.
+    const { phone: _verifiedPhone, ...publicOrder } = order;
+    res.json({ order: { ...publicOrder, items: items || [] } });
   } catch (error) {
     console.error("Order lookup API error:", error);
     res.status(503).json({ error: "Не удалось проверить заказ. Попробуй позже." });
