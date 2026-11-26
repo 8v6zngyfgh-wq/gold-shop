@@ -2268,6 +2268,94 @@ input::placeholder, textarea::placeholder{
 }
 
 @media(max-width:700px){.trust-grid{grid-template-columns:1fr}.trust-form{grid-template-columns:1fr}}
+
+/* GOLD SHOP — homepage + product-card refinement */
+.hero{
+ min-height:clamp(620px,76vh,820px);
+ background:#080808;
+}
+.hero-bg{
+ background:
+  radial-gradient(ellipse at 78% 30%,rgba(210,190,150,.13),transparent 30%),
+  radial-gradient(ellipse at 65% 75%,rgba(255,255,255,.07),transparent 34%),
+  linear-gradient(112deg,#050505 0%,#171717 52%,#050505 100%);
+}
+.hero-content{max-width:900px;padding-top:clamp(70px,10vw,130px);padding-bottom:clamp(70px,9vw,115px)}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:12px;color:#d5c7a9}
+.hero .eyebrow:before{content:"";width:28px;height:1px;background:#d5c7a9}
+.hero h1{text-wrap:balance;max-width:780px}
+.hero p{max-width:410px;font-size:13px;line-height:1.9;color:#d0d0d0;margin:0 0 28px}
+.hero .btn.light{min-height:52px;padding:0 25px;font-size:9px;letter-spacing:.16em}
+.puffer-editorial{margin-top:10px}
+.promo-grid{gap:16px}
+.promo{
+ min-height:clamp(300px,34vw,460px);
+ background:#f2f1ed;
+ border:1px solid rgba(255,255,255,.1);
+}
+.promo-visual{background:linear-gradient(145deg,#f4f3ef,#e6e5e0)}
+.promo-visual-two{background:linear-gradient(145deg,#e9e8e3,#d6d5d0)}
+.promo-product-photo{padding:5%;mix-blend-mode:multiply}
+.promo:after{background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,.08) 58%,transparent)}
+.promo-copy{left:clamp(20px,3vw,36px);bottom:clamp(20px,3vw,36px)}
+.promo-copy .eyebrow{color:#e4e4e4}
+.promo-copy h3{font-size:clamp(27px,3.2vw,43px);letter-spacing:-.025em}
+.promo-copy span.eyebrow{padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.55)}
+.promo:focus-visible,.product-card:focus-visible{outline:2px solid #c9ad75;outline-offset:4px}
+.catalog .product-card{
+ background:#fff;
+ border:1px solid #ecebe7;
+ padding:0 0 13px;
+ transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+.catalog .product-card:hover{
+ transform:translateY(-4px);
+ border-color:#d7d3ca;
+ box-shadow:0 14px 32px rgba(0,0,0,.07);
+}
+.catalog .product-media{
+ background:linear-gradient(145deg,#f5f5f2,#ecebe7)!important;
+ aspect-ratio:4/5!important;
+}
+.catalog .product-media .front-image,.catalog .product-media .back-image{
+ padding:7%!important;
+}
+.catalog .product-info{padding:14px 13px 0!important}
+.catalog .product-name{font-size:clamp(15px,1.25vw,18px)!important}
+.catalog .product-meta{font-size:8px!important}
+.catalog .product-stock{font-size:9px!important}
+.catalog .price-current{font-size:13px!important}
+.catalog .favorite{top:12px!important;right:12px!important}
+.catalog .product-tag{top:12px!important;left:12px!important}
+.catalog .quick-add{left:10px!important;right:10px!important;bottom:10px!important}
+@media(max-width:900px){
+ .hero{min-height:680px}
+ .promo-grid{grid-template-columns:1fr 1fr}
+ .promo{min-height:330px}
+}
+@media(max-width:620px){
+ .hero{min-height:690px}
+ .hero-content{padding:0 7vw 13vw}
+ .hero h1{font-size:clamp(54px,15vw,70px);margin:18px 0}
+ .hero p{font-size:12px;max-width:330px}
+ .hero .btn.light{width:100%;max-width:320px}
+ .promo-grid{grid-template-columns:1fr;gap:12px}
+ .promo{min-height:320px}
+ .promo-product-photo{padding:3%!important}
+ .promo-copy h3{font-size:32px}
+ .catalog .product-card{padding-bottom:11px}
+ .catalog .product-info{gap:6px!important;padding:12px 9px 0!important}
+ .catalog .product-name{font-size:14px!important;line-height:1.25!important}
+ .catalog .product-sizes{font-size:7px!important}
+ .catalog .price-current{font-size:11px!important}
+ .catalog .product-stock{font-size:8px!important}
+ .catalog .product-media .front-image,.catalog .product-media .back-image{padding:5%!important}
+ .catalog .quick-add{opacity:1!important;transform:none!important;min-height:40px!important;font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .catalog .product-card,.promo-product-photo{transition:none!important}
+}
+
 </style></head>
 
 <body>
