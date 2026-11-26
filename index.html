@@ -1719,6 +1719,22 @@ footer{
  opacity:1!important;
 }
 
+
+/* Stock-aware cart quantity controls */
+.qty button:disabled{
+ opacity:.3!important;
+ cursor:not-allowed!important;
+ background:#f2f2f2!important;
+ color:#888!important;
+}
+.cart-stock-note{
+ display:block;
+ margin-top:7px;
+ color:#8a6a36!important;
+ font-size:9px!important;
+ letter-spacing:.03em;
+}
+
 </style>
 </head>
 
@@ -1970,6 +1986,12 @@ function toast(message){
  toast.timer=setTimeout(()=>el.classList.remove('show'),2600);
 }
 function productById(id){return PRODUCTS.find(p=>p.id===String(id))}
+function availableStock(id,color,size){
+ const product=productById(id);
+ const variant=product?.variants?.find(v=>v.color===String(color));
+ const quantity=Number(variant?.sizes?.[String(size)]??0);
+ return Number.isFinite(quantity)?Math.max(0,Math.floor(quantity)):0;
+}
 function cartQuantity(){return cart.reduce((sum,item)=>sum+item.qty,0)}
 function cartSum(){return cart.reduce((sum,item)=>sum+(productById(item.id)?.price||0)*item.qty,0)}
 function updateCounts(){
@@ -2027,7 +2049,10 @@ async function loadProducts(){
   activeFilter='all';
   document.querySelectorAll('.filter').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
 
-  cart=cart.filter(item=>productById(item.id));
+  cart=cart.filter(item=>productById(item.id)).map(item=>({
+   ...item,
+   qty:Math.min(Math.max(1,Math.floor(Number(item.qty)||1)),availableStock(item.id,item.color,item.size))
+  })).filter(item=>item.qty>0);
   favorites=new Set([...favorites].filter(id=>productById(id)));
 
   saveCart();
@@ -2199,8 +2224,18 @@ $('galleryDots').addEventListener('click',e=>{
 $('colorOptions').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b||b.disabled)return;activeColor=b.dataset.color;activeSize='';activeImage=0;renderColors();renderSizes();renderGallery()});
 $('sizeOptions').addEventListener('click',e=>{const b=e.target.closest('[data-size]');if(!b||b.disabled)return;activeSize=b.dataset.size;renderSizes()});
 $('sizeHelp').addEventListener('click',()=>toast('Напиши нам в Telegram — поможем подобрать размер'));
-$('modalAdd').addEventListener('click',()=>{if(!activeProduct||!activeColor||!activeSize){toast('Сначала выбери цвет и размер');return}addToCart(activeProduct.id,activeColor,activeSize);closeProduct();openCart()});
-function addToCart(id,color,size){const found=cart.find(x=>x.id===id&&x.color===color&&x.size===size);if(found)found.qty++;else cart.push({id,color,size,qty:1});saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину')}
+$('modalAdd').addEventListener('click',()=>{
+ if(!activeProduct||!activeColor||!activeSize){toast('Сначала выбери цвет и размер');return}
+ if(addToCart(activeProduct.id,activeColor,activeSize)){closeProduct();openCart()}
+});
+function addToCart(id,color,size){
+ const stock=availableStock(id,color,size);
+ if(stock<1){toast('Этот размер закончился');return false}
+ const found=cart.find(x=>x.id===id&&x.color===color&&x.size===size);
+ if(found&&found.qty>=stock){toast('В наличии только '+stock+' шт.');return false}
+ if(found)found.qty++;else cart.push({id,color,size,qty:1});
+ saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину');return true;
+}
 
 function renderCart(){
  const box=$('cartItems');
@@ -2218,8 +2253,9 @@ function renderCart(){
      <div class="qty">
       <button data-qty="${index}" data-delta="-1" aria-label="Уменьшить">−</button>
       <span>${item.qty}</span>
-      <button data-qty="${index}" data-delta="1" aria-label="Увеличить">+</button>
+      <button data-qty="${index}" data-delta="1" aria-label="Увеличить" ${item.qty>=availableStock(item.id,item.color,item.size)?'disabled':''}>+</button>
      </div>
+     ${item.qty>=availableStock(item.id,item.color,item.size)?'<small class="cart-stock-note">Достигнут доступный остаток</small>':''}
      <button class="remove" data-remove="${index}">Удалить</button>
     </div>
     <strong style="font-size:11px">${money(p.price*item.qty)}</strong>
@@ -2235,7 +2271,11 @@ $('cartItems').addEventListener('click',e=>{
  if(qty){
   const i=Number(qty.dataset.qty);
   if(!cart[i])return;
-  cart[i].qty+=Number(qty.dataset.delta);
+  const delta=Number(qty.dataset.delta);
+  if(delta>0&&cart[i].qty>=availableStock(cart[i].id,cart[i].color,cart[i].size)){
+   toast('Больше нет в наличии');return;
+  }
+  cart[i].qty+=delta;
   if(cart[i].qty<=0)cart.splice(i,1);
  }
  if(rem)cart.splice(Number(rem.dataset.remove),1);
