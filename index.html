@@ -2183,6 +2183,36 @@ input::placeholder, textarea::placeholder{
 .trust-form input,.trust-form textarea{width:100%;background:#111;color:#fff;border:1px solid var(--line);padding:13px;font-size:12px}
 .trust-form button{grid-column:1/-1}
 .trust-result,.trust-list{border:1px solid var(--line);padding:16px;margin-top:14px;background:#111;font-size:12px;line-height:1.8}
+.trust-result{border-radius:4px;padding:22px;background:linear-gradient(145deg,#151515,#0b0b0b);overflow-wrap:anywhere}
+.order-status-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid #ffffff20}
+.order-status-pill{display:inline-flex;align-items:center;padding:7px 11px;border:1px solid #ffffff35;border-radius:30px;color:#fff;font-size:11px;font-weight:700}
+.order-status-timeline{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:22px 0}
+.order-status-step{position:relative;text-align:center;color:#777;font-size:10px;line-height:1.4}
+.order-status-step:before{content:"";display:block;width:12px;height:12px;margin:0 auto 9px;border:2px solid #555;border-radius:50%;background:#111}
+.order-status-step.done{color:#f2f2f2}
+.order-status-step.done:before{background:#d6b36a;border-color:#d6b36a;box-shadow:0 0 0 4px #d6b36a22}
+.order-status-step.current{color:#d6b36a;font-weight:700}
+.order-status-step.current:before{background:#fff;border-color:#d6b36a;box-shadow:0 0 0 4px #d6b36a35}
+.order-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.order-info-cell{padding:12px;background:#ffffff08;border:1px solid #ffffff12;min-width:0}
+.order-info-cell small{display:block;color:#aaa;font-size:10px;margin-bottom:5px}
+.order-info-cell b{font-size:12px;color:#fff;overflow-wrap:anywhere}
+.order-items{margin-top:16px;padding-top:14px;border-top:1px solid #ffffff20}
+.order-copy-small{margin-top:16px;min-height:44px;padding:0 15px;background:#fff;color:#111;border:0;font-weight:700}
+.order-cancelled{margin:18px 0;padding:13px;border:1px solid #b45353;color:#ffb4b4;background:#b4535314}
+@media(max-width:620px){
+ .trust-form{grid-template-columns:1fr;gap:12px}
+ .trust-form input{min-height:50px;font-size:16px;padding:14px}
+ .trust-form button{grid-column:auto;width:100%;min-height:52px}
+ .trust-result,.trust-list{padding:14px;font-size:13px}
+ .order-status-timeline{gap:3px;margin:18px -4px}
+ .order-status-step{font-size:9px}
+ .order-status-step:before{width:11px;height:11px}
+ .order-info-grid{grid-template-columns:1fr 1fr;gap:7px}
+ .order-info-cell{padding:10px}
+ .order-info-cell b{font-size:11px}
+ .trust-list article{padding:16px 0}
+}
 .trust-list article{padding:14px 0;border-bottom:1px solid var(--line)}
 .trust-list article:last-child{border-bottom:0}
 .trust-list img{width:100%;max-width:220px;aspect-ratio:4/5;object-fit:cover;margin:10px 8px 0 0}
@@ -3218,7 +3248,13 @@ $('orderLookupForm').addEventListener('submit', async e => {
   const response=await fetch(API_BASE+'/api/orders/'+encodeURIComponent(id)+'?contact='+encodeURIComponent(contact));
   const data=await response.json();if(!response.ok)throw new Error(data.error||'Заказ не найден.');
   const o=data.order;
-  box.innerHTML='<b>Заказ '+publicEsc(o.id)+'</b><br>Статус: '+publicEsc(publicStatus[o.status]||o.status)+'<br>Город: '+publicEsc(o.city||'—')+'<br>Сумма: '+new Intl.NumberFormat('ru-RU').format(Number(o.total)||0)+' ₽<br>Состав: '+(o.items||[]).map(i=>publicEsc(i.product_name)+' · '+publicEsc(i.selected_color)+' · '+publicEsc(i.selected_size)+' × '+publicEsc(i.quantity)).join('<br>')+(o.tracking_number?'<br>Трек-номер: <b>'+publicEsc(o.tracking_number)+'</b>':'')+(o.tracking_url?'<br><a class="text-link" target="_blank" rel="noopener" href="'+publicEsc(o.tracking_url)+'">Отследить посылку ↗</a>':'');
+  const steps=[['new','Принят'],['confirmed','Подтверждён'],['shipped','Отправлен'],['completed','Завершён']];
+  const current=steps.findIndex(([key])=>key===o.status);
+  const timeline=o.status==='cancelled'?'<div class="order-cancelled">Этот заказ отменён. Если это ошибка, свяжись с менеджером магазина.</div>':'<div class="order-status-timeline">'+steps.map(([key,label],index)=>'<div class="order-status-step '+(index<current?'done':index===current?'current':'')+'">'+label+'</div>').join('')+'</div>';
+  const date=o.created_at?new Date(o.created_at).toLocaleDateString('ru-RU'):'—';
+  const delivery=({cdek:'СДЭК',post:'Почта России',pickup:'Самовывоз',yandex:'Яндекс Доставка'})[o.delivery_method]||o.delivery_method||'Уточняется';
+  box.innerHTML='<div class="order-status-head"><b>Информация о заказе</b><span class="order-status-pill">'+publicEsc(publicStatus[o.status]||o.status)+'</span></div>'+timeline+'<div class="order-info-grid"><div class="order-info-cell"><small>Номер заказа</small><b>'+publicEsc(o.id)+'</b></div><div class="order-info-cell"><small>Дата оформления</small><b>'+publicEsc(date)+'</b></div><div class="order-info-cell"><small>Город</small><b>'+publicEsc(o.city||'—')+'</b></div><div class="order-info-cell"><small>Доставка</small><b>'+publicEsc(delivery)+'</b></div><div class="order-info-cell"><small>Сумма товаров</small><b>'+new Intl.NumberFormat('ru-RU').format(Number(o.total)||0)+' ₽</b></div><div class="order-info-cell"><small>Получатель</small><b>'+publicEsc(o.customer_name||'—')+'</b></div></div><div class="order-items"><b>Состав заказа</b><br>'+(o.items||[]).map(i=>publicEsc(i.product_name)+' · '+publicEsc(i.selected_color||'')+' · '+publicEsc(i.selected_size||'')+' × '+publicEsc(i.quantity)).join('<br>')+'</div>'+(o.tracking_number?'<p>Трек-номер: <b>'+publicEsc(o.tracking_number)+'</b></p>':'')+(o.tracking_url?'<a class="text-link" target="_blank" rel="noopener" href="'+publicEsc(o.tracking_url)+'">Отследить посылку ↗</a>':'')+'<button class="btn order-copy-small" type="button" id="copyLookupOrder">Скопировать номер заказа</button>';
+  const copyLookup=$('copyLookupOrder');copyLookup.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(o.id);copyLookup.textContent='Номер скопирован'}catch{copyLookup.textContent='Скопируй номер вручную: '+o.id}});
  }catch(error){box.textContent=error.message||'Не удалось проверить заказ.'}
 });
 $('closeOrderConfirmation').addEventListener('click',()=>$('orderConfirmation').classList.remove('open'));
