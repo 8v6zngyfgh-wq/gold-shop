@@ -1270,6 +1270,15 @@ footer{
  padding-top:2px!important;
  font-variant-numeric:tabular-nums;
 }
+.catalog .price-stack{display:flex;flex-direction:column;align-items:flex-end;gap:4px;padding-top:1px}
+.catalog .price-current{font-size:12px;font-weight:600;color:#111;font-variant-numeric:tabular-nums;white-space:nowrap}
+.catalog .price-old{font-size:9px;color:#999;text-decoration:line-through;text-decoration-thickness:1px;white-space:nowrap}
+.catalog .discount-pill{display:inline-flex;align-items:center;background:#111;color:#fff;padding:4px 6px;font-size:8px;letter-spacing:.08em;white-space:nowrap}
+.modal-price-stack{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:15px 0 24px}
+.modal-price-current{font-size:16px;font-weight:600;color:#080808}
+.modal-price-old{font-size:12px;color:#999;text-decoration:line-through}
+.modal-discount{font-size:9px;letter-spacing:.1em;background:#111;color:#fff;padding:5px 7px}
+
 .catalog .empty-state{
  color:#777!important;
  padding:70px 10px!important;
@@ -2113,6 +2122,14 @@ function normalizeProduct(product) {
 }
 const TELEGRAM_USERNAME='go1d_sh0p';
 const money=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
+const discountPercent=p=>p?.oldPrice>p?.price?Math.round((1-p.price/p.oldPrice)*100):0;
+const priceMarkup=p=>p?.oldPrice>p?.price
+ ? '<div class="price-stack"><span class="price-current">'+money(p.price)+'</span><span class="price-old">'+money(p.oldPrice)+'</span><span class="discount-pill">−'+discountPercent(p)+'%</span></div>'
+ : '<div class="price">'+money(p.price)+'</div>';
+const modalPriceMarkup=p=>p?.oldPrice>p?.price
+ ? '<span class="modal-price-current">'+money(p.price)+'</span><span class="modal-price-old">'+money(p.oldPrice)+'</span><span class="modal-discount">−'+discountPercent(p)+'%</span>'
+ : money(p.price);
+
 const $=id=>document.getElementById(id);
 const safeRead=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
 
@@ -2300,7 +2317,7 @@ function renderProducts(){
      <div class="product-meta">${escapeHtml(p.categoryLabel)}</div>
      ${p.sizes.length?'<div class="product-sizes">РАЗМЕРЫ · '+p.sizes.map(escapeHtml).join(' / ')+'</div>':''}
     </div>
-    <div class="price">${money(p.price)}</div>
+    ${priceMarkup(p)}
    </div>
   </article>`).join('');
 
@@ -2338,7 +2355,7 @@ $('favoritesLink').addEventListener('click',e=>{
     <button class="favorite active" data-favorite="${p.id}">♥</button>
     <button class="quick-add" data-quick="${p.id}">Выбрать размер</button>
    </div>
-   <div class="product-info"><div><p class="product-name">${escapeHtml(p.name)}</p><div class="product-meta">${escapeHtml(p.categoryLabel)}</div></div><div class="price">${money(p.price)}</div></div>
+   <div class="product-info"><div><p class="product-name">${escapeHtml(p.name)}</p><div class="product-meta">${escapeHtml(p.categoryLabel)}</div></div>${priceMarkup(p)}</div>
   </article>`).join('')||'<div class="empty-state">В избранном пока пусто.</div>';
  $('catalog').scrollIntoView({behavior:'smooth'});
 });
@@ -2371,7 +2388,7 @@ $('productGrid').addEventListener('keydown',e=>{
 
 function selectedVariant(){return activeProduct?.variants.find(v=>v.color===activeColor)||null}
 function variantImages(){const a=selectedVariant()?.images||[];return a.length?a:[PRODUCT_IMAGE_FALLBACK]}
-function openProduct(id){const p=productById(id);if(!p)return;activeProduct=p;activeColor=p.variants.find(v=>Object.values(v.sizes).some(q=>q>0))?.color||p.variants[0]?.color||'';activeSize='';activeImage=0;$('modalCategory').textContent=p.categoryLabel;$('modalName').textContent=p.name;$('modalPrice').textContent=money(p.price);$('modalDescription').textContent=p.description;renderColors();renderSizes();renderGallery();$('productModal').classList.add('open');document.body.style.overflow='hidden'}
+function openProduct(id){const p=productById(id);if(!p)return;activeProduct=p;activeColor=p.variants.find(v=>Object.values(v.sizes).some(q=>q>0))?.color||p.variants[0]?.color||'';activeSize='';activeImage=0;$('modalCategory').textContent=p.categoryLabel;$('modalName').textContent=p.name;$('modalPrice').innerHTML=modalPriceMarkup(p);$('modalDescription').textContent=p.description;renderColors();renderSizes();renderGallery();$('productModal').classList.add('open');document.body.style.overflow='hidden'}
 function renderColors(){$('colorOptions').innerHTML=(activeProduct?.variants||[]).map(v=>{const ok=Object.values(v.sizes).some(q=>q>0);return `<button class="color-btn ${v.color===activeColor?'selected':''}" data-color="${escapeAttr(v.color)}" ${ok?'':'disabled'}>${escapeHtml(v.color)}</button>`}).join('')}
 function renderSizes(){const entries=Object.entries(selectedVariant()?.sizes||{});if(!entries.some(([z,q])=>z===activeSize&&q>0))activeSize='';$('sizeOptions').innerHTML=entries.map(([z,q])=>`<button class="size-btn ${z===activeSize?'selected':''}" data-size="${escapeAttr(z)}" ${q>0?'':'disabled'}>${escapeHtml(z)}</button>`).join('');const total=entries.reduce((n,[,q])=>n+q,0);$('variantStock').textContent=total?`В наличии: ${total} шт.`:'Этот цвет закончился';$('modalAdd').disabled=!activeSize}
 function renderGallery(){const a=variantImages();activeImage=Math.min(activeImage,a.length-1);$('modalImage').src=a[activeImage];$('modalImage').alt=activeProduct.name+' — '+activeColor+' — фото '+(activeImage+1);$('galleryDots').innerHTML=a.map((_,i)=>`<button class="${i===activeImage?'active':''}" data-image="${i}" aria-label="Фото ${i+1}"></button>`).join('');$('galleryPrev').style.display=a.length>1?'block':'none';$('galleryNext').style.display=a.length>1?'block':'none'}
