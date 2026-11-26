@@ -509,7 +509,7 @@ app.get("/api/admin/orders", requireMiniAppAdmin, async (_req, res) => {
   try {
     const { data: orders, error } = await supabase
       .from("orders")
-      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, total, status, tracking_number, tracking_url, public_order_consent, created_at")
+      .select("id, customer_name, phone, email, contact_method, delivery_method, city, delivery_address, comment, total, status, tracking_number, tracking_url, public_order_consent, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw error;
