@@ -2746,9 +2746,9 @@ html{scroll-padding-top:90px}
   description, sizes и images.
 
   DADATA:
-  Вставь API-токен DaData в DADATA_TOKEN.
-  Для публичного сайта лучше использовать серверный прокси,
-  чтобы не размещать API-ключ непосредственно в браузере.
+  Подсказки адреса идут через серверный прокси.
+  Если подключаешь DaData, храни токен только в переменной
+  DADATA_API_TOKEN в Render — не добавляй его в этот файл.
 */
 
 const ADDRESS_SUGGEST_URL = 'https://gold-shop-api-gv5e.onrender.com/api/address/suggest';
