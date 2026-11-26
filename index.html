@@ -2449,6 +2449,29 @@ html{scroll-padding-top:90px}
 
 .faq-list{display:grid;gap:10px;max-width:900px}.faq-item{border:1px solid var(--line);border-radius:12px;background:var(--panel);padding:17px 19px}.faq-item summary{cursor:pointer;font-weight:650;list-style:none}.faq-item summary::-webkit-details-marker{display:none}.faq-item summary:after{content:"+";float:right;color:var(--gold);font-size:18px}.faq-item[open] summary:after{content:"−"}.faq-item p{color:var(--muted);font-size:13px;line-height:1.65;margin:12px 0 0}
 
+
+/* GOLD SHOP — единая премиальная система скидок */
+.catalog .product-info{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+.catalog .product-copy{min-width:0}
+.catalog .price-stack{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-start;gap:9px;flex-wrap:wrap;padding:0;margin-top:2px}
+.catalog .price-current{font-size:clamp(17px,1.7vw,22px);font-weight:700;letter-spacing:-.035em;color:#111;order:0}
+.catalog .price-old{font-size:12px;color:#888;text-decoration:line-through;text-decoration-thickness:1px;order:1}
+.catalog .discount-pill{display:inline-flex;align-items:center;justify-content:center;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:10px;font-weight:700;letter-spacing:.04em;order:2}
+.catalog .product-sale-badge{position:absolute;z-index:4;left:12px;bottom:12px;padding:8px 10px;background:rgba(8,8,8,.88);border:1px solid rgba(255,255,255,.35);color:#fff;font:700 9px/1 Arial,Helvetica,sans-serif;letter-spacing:.13em;backdrop-filter:blur(8px)}
+.catalog .product-tag{top:12px;left:12px}
+.catalog .product-sale-badge + .favorite{z-index:5}
+.modal-price-stack{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:15px 0 24px}
+.modal-price-current{font-size:clamp(25px,3vw,34px);font-weight:750;letter-spacing:-.045em;color:#080808}
+.modal-price-old{font-size:15px;color:#888;text-decoration:line-through}
+.modal-discount{display:inline-flex;align-items:center;background:#a52b35;color:#fff;padding:6px 9px;border-radius:2px;font-size:11px;font-weight:700;letter-spacing:.05em}
+@media(max-width:620px){
+ .catalog .product-info{gap:8px;padding:12px 2px 0!important}
+ .catalog .price-current{font-size:17px}
+ .catalog .price-old{font-size:10px}
+ .catalog .discount-pill{font-size:9px;padding:4px 6px}
+ .catalog .product-sale-badge{left:8px;bottom:8px;padding:7px 8px;font-size:8px}
+}
+
 </style></head>
 
 <body>
@@ -2962,6 +2985,7 @@ function renderProducts(){
     <div class="particle-layer" aria-hidden="true"></div>
     <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
     ${p.tag&&p.tag!=='GOLD SHOP'?'<span class="product-tag">'+escapeHtml(p.tag)+'</span>':''}
+    ${p.oldPrice>p.price?'<span class="product-sale-badge">SALE · −'+discountPercent(p)+'%</span>':''}
     <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
     <button class="quick-add" data-quick="${escapeAttr(p.id)}">Выбрать размер</button>
    </div>
@@ -3007,6 +3031,7 @@ $('favoritesLink').addEventListener('click',e=>{
    <div class="product-media">
     <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)}">
     <div class="particle-layer" aria-hidden="true"></div>
+    ${p.oldPrice>p.price?'<span class="product-sale-badge">SALE · −'+discountPercent(p)+'%</span>':''}
     <button class="favorite active" data-favorite="${p.id}">♥</button>
     <button class="quick-add" data-quick="${p.id}">Выбрать размер</button>
    </div>
