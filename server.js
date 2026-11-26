@@ -509,7 +509,7 @@ app.get("/api/admin/orders", requireMiniAppAdmin, async (_req, res) => {
   try {
     const { data: orders, error } = await supabase
       .from("orders")
-      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, total, status, created_at")
+      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, total, status, tracking_number, tracking_url, public_order_consent, created_at")
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) throw error;
@@ -685,6 +685,133 @@ app.get("/api/products", async (_req, res) => {
   }
 });
 
+// Public trust, shipment history and order tracking
+app.get("/api/public/shipments", async (_req, res) => {
+  try {
+    const { data: orders, error } = await supabase.from("orders")
+      .select("id, city, delivery_method, status, tracking_number, tracking_url, created_at")
+      .eq("public_order_consent", true).in("status", ["shipped", "completed"])
+      .not("tracking_number", "is", null).order("created_at", { ascending: false }).limit(30);
+    if (error) throw error;
+    const ids = (orders || []).map(o => o.id);
+    let items = [];
+    if (ids.length) {
+      const { data, error: itemsError } = await supabase.from("order_items")
+        .select("order_id, product_name").in("order_id", ids);
+      if (itemsError) throw itemsError;
+      items = data || [];
+    }
+    const byOrder = new Map();
+    for (const item of items) {
+      if (!byOrder.has(item.order_id)) byOrder.set(item.order_id, []);
+      byOrder.get(item.order_id).push(item.product_name);
+    }
+    res.set("Cache-Control", "public, max-age=60");
+    res.json({ shipments: (orders || []).map(o => ({
+      code: String(o.id).slice(0, 8).toUpperCase(), city: o.city,
+      delivery_method: o.delivery_method, status: o.status,
+      tracking_number: o.tracking_number, tracking_url: o.tracking_url || null,
+      created_at: o.created_at, items: byOrder.get(o.id) || []
+    })) });
+  } catch (error) {
+    console.error("Public shipments API error:", error);
+    res.status(503).json({ error: "История отправок временно недоступна." });
+  }
+});
+
+app.get("/api/public/reviews", async (_req, res) => {
+  try {
+    const { data, error } = await supabase.from("customer_reviews")
+      .select("id, display_name, review_text, photo_urls, created_at")
+      .eq("is_published", true).eq("publication_consent", true)
+      .order("created_at", { ascending: false }).limit(30);
+    if (error) throw error;
+    res.set("Cache-Control", "public, max-age=60");
+    res.json({ reviews: data || [] });
+  } catch (error) {
+    console.error("Public reviews API error:", error);
+    res.status(503).json({ error: "Отзывы временно недоступны." });
+  }
+});
+
+app.get("/api/orders/:id", async (req, res) => {
+  const orderId = String(req.params.id || "");
+  const contact = String(req.query.contact || "").trim();
+  if (!UUID_PATTERN.test(orderId) || contact.length < 5 || contact.length > 100) {
+    return res.status(400).json({ error: "Укажи номер заказа и контакт, который использовался при оформлении." });
+  }
+  try {
+    const { data: order, error } = await supabase.from("orders")
+      .select("id, customer_name, phone, contact_method, delivery_method, city, status, total, tracking_number, tracking_url, created_at")
+      .eq("id", orderId).maybeSingle();
+    if (error) throw error;
+    if (!order || String(order.phone || "").toLowerCase() !== contact.toLowerCase()) {
+      return res.status(404).json({ error: "Заказ не найден. Проверь номер и контакт." });
+    }
+    const { data: items, error: itemsError } = await supabase.from("order_items")
+      .select("product_name, selected_color, selected_size, quantity").eq("order_id", orderId);
+    if (itemsError) throw itemsError;
+    res.set("Cache-Control", "no-store");
+    res.json({ order: { ...order, items: items || [] } });
+  } catch (error) {
+    console.error("Order lookup API error:", error);
+    res.status(503).json({ error: "Не удалось проверить заказ. Попробуй позже." });
+  }
+});
+
+app.patch("/api/admin/orders/:id/tracking", requireMiniAppAdmin, async (req, res) => {
+  const orderId = String(req.params.id || "");
+  const trackingNumber = String(req.body?.tracking_number || "").trim();
+  const trackingUrl = String(req.body?.tracking_url || "").trim();
+  if (!UUID_PATTERN.test(orderId) || trackingNumber.length > 100 || trackingUrl.length > 500) {
+    return res.status(400).json({ error: "Проверь номер и ссылку отслеживания." });
+  }
+  if (trackingUrl && !/^https:\/\//i.test(trackingUrl)) {
+    return res.status(400).json({ error: "Ссылка отслеживания должна начинаться с https://." });
+  }
+  try {
+    const { data, error } = await supabase.from("orders")
+      .update({ tracking_number: trackingNumber || null, tracking_url: trackingUrl || null })
+      .eq("id", orderId).select("id, tracking_number, tracking_url").maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Заказ не найден." });
+    res.json({ ok: true, tracking: data });
+  } catch (error) {
+    console.error("Save tracking error:", error);
+    res.status(500).json({ error: "Не удалось сохранить трек-номер." });
+  }
+});
+
+app.post("/api/admin/reviews", requireMiniAppAdmin, async (req, res) => {
+  const orderId = String(req.body?.order_id || "");
+  const displayName = String(req.body?.display_name || "").trim();
+  const reviewText = String(req.body?.review_text || "").trim();
+  const photoUrls = Array.isArray(req.body?.photo_urls) ? req.body.photo_urls : [];
+  const consent = req.body?.publication_consent === true;
+  if (!UUID_PATTERN.test(orderId) || displayName.length < 2 || displayName.length > 60 ||
+      reviewText.length < 10 || reviewText.length > 1200 || photoUrls.length > 5 ||
+      photoUrls.some(u => typeof u !== "string" || !/^https:\/\//i.test(u) || u.length > 1000) || !consent) {
+    return res.status(400).json({ error: "Проверь отзыв, HTTPS-ссылки на фото и согласие покупателя." });
+  }
+  try {
+    const { data: order, error: orderError } = await supabase.from("orders")
+      .select("id, status").eq("id", orderId).maybeSingle();
+    if (orderError) throw orderError;
+    if (!order || order.status !== "completed") {
+      return res.status(409).json({ error: "Отзыв можно подтвердить только по завершённому заказу." });
+    }
+    const { data, error } = await supabase.from("customer_reviews").insert({
+      order_id: orderId, display_name: displayName, review_text: reviewText,
+      photo_urls: photoUrls, publication_consent: true, is_published: true
+    }).select("id").single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, review_id: data.id });
+  } catch (error) {
+    console.error("Publish review error:", error);
+    res.status(500).json({ error: "Не удалось опубликовать отзыв." });
+  }
+});
+
 // Create order API
 
 app.post("/api/orders", async (req, res) => {
@@ -850,6 +977,7 @@ if (contactMethod === "telegram") {
         city,
         delivery_address: deliveryAddress,
         comment,
+        public_order_consent: body.public_order_consent === true,
         status: "new",
         total
       })
