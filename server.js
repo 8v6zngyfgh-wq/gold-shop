@@ -78,6 +78,9 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: "128kb" }));
 
+// Protect every Mini App administration route, including order updates and analytics.
+app.use("/api/admin", rateLimit({ windowMs: 60_000, max: 60, scope: "admin" }));
+
 // Lightweight per-IP abuse protection. Limits are scoped by endpoint, not order ID.
 
 const bot = new Bot(process.env.BOT_TOKEN);
@@ -379,7 +382,7 @@ function verifyTelegramInitData(initData) {
     console.warn("Mini App auth rejected: missing hash or invalid auth_date.");
     return null;
   }
-  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 24) {
+  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 6) {
     console.warn("Mini App auth rejected: initData expired.");
     return null;
   }
@@ -428,7 +431,7 @@ function requireMiniAppAdmin(req, res, next) {
 
 // Admin product management API
 
-app.get("/api/admin/products", rateLimit({ windowMs: 60_000, max: 60, scope: "admin" }), requireMiniAppAdmin, async (_req, res) => {
+app.get("/api/admin/products", requireMiniAppAdmin, async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from("products")
@@ -851,6 +854,10 @@ app.post("/api/admin/reviews", rateLimit({ windowMs: 60_000, max: 10, scope: "ad
     if (!order || order.status !== "completed") {
       return res.status(409).json({ error: "Отзыв можно подтвердить только по завершённому заказу." });
     }
+    const { data: existingReview, error: existingReviewError } = await supabase
+      .from("customer_reviews").select("id").eq("order_id", orderId).maybeSingle();
+    if (existingReviewError) throw existingReviewError;
+    if (existingReview) return res.status(409).json({ error: "Для этого заказа отзыв уже опубликован." });
     const { data, error } = await supabase.from("customer_reviews").insert({
       order_id: orderId, display_name: displayName, review_text: reviewText,
       photo_urls: photoUrls, publication_consent: true, is_published: true
