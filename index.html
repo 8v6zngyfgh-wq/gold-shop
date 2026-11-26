@@ -511,6 +511,12 @@ footer{background:#050505;color:#f2f2f2;padding:60px 5vw 28px;border-top:1px sol
 .checkout input::placeholder,.checkout textarea::placeholder{color:#777}
 .checkout textarea{min-height:75px;resize:vertical}
 .checkout .btn{width:100%;margin-top:20px}
+.delivery-warning{display:grid;grid-template-columns:44px 1fr;gap:13px;align-items:start;margin:18px 0;padding:17px;border:2px solid #d97706;background:linear-gradient(135deg,rgba(217,119,6,.16),rgba(217,119,6,.045));color:#fff}
+.delivery-warning-mark{font:700 42px/1 Arial,sans-serif;color:#f59e0b;text-align:center}
+.delivery-warning strong{display:block;font-size:13px;letter-spacing:.08em;margin:0 0 7px;color:#ffc46b}
+.delivery-warning p{margin:0;color:#eee;font-size:12px;line-height:1.65}
+.checkout .delivery-warning{margin:18px 0 20px}
+@media(max-width:520px){.delivery-warning{grid-template-columns:34px 1fr;padding:13px;gap:9px}.delivery-warning-mark{font-size:36px}}
 .contact-switch{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
 .contact-option{border:1px solid var(--line);padding:12px;text-align:center;font-size:10px;letter-spacing:.1em;cursor:pointer;background:#111;color:#aaa}
 .contact-option.active{background:#fff;color:#080808;border-color:#fff}
@@ -2384,7 +2390,8 @@ input::placeholder, textarea::placeholder{
   <article class="trust-card"><h3>Возврат и вопросы</h3><p>Если возникла проблема с товаром или доставкой, напиши в поддержку с номером заказа. Обращения рассматриваются с учётом применимых правил защиты прав потребителей.</p></article>
   <article class="trust-card"><h3>Отслеживание</h3><p>После отправки передадим доступный трек-номер или ссылку для отслеживания, чтобы ты мог следить за движением посылки.</p></article>
  </div>
- <p class="policy-copy" style="margin-top:22px">Стоимость доставки и ориентировочные сроки подтверждаются до оплаты. Доступность конкретной службы зависит от города и адреса получателя. Личные банковские реквизиты не размещаются в открытом доступе.</p>
+ <div class="delivery-warning" role="note"><div class="delivery-warning-mark">!</div><div><strong>ВАЖНО! ДОСТАВКА ОПЛАЧИВАЕТСЯ ПОСЛЕ СОГЛАСОВАНИЯ</strong><p>Точная стоимость доставки не рассчитывается автоматически на сайте. После получения данных заказа менеджер уточнит тариф и сообщит полную сумму. Оплачивай только после подтверждения итоговой стоимости.</p></div></div>
+ <p class="policy-copy" style="margin-top:22px">Доступность конкретной службы и срок доставки зависят от города и выбранного пункта получения. Личные банковские реквизиты не размещаются в открытом доступе.</p>
 </section>
 </main>
 
@@ -2434,21 +2441,19 @@ input::placeholder, textarea::placeholder{
   <button type="button" class="close" id="checkoutClose" style="position:absolute;right:20px;top:15px" aria-label="Закрыть">×</button>
   <div class="kicker">Almost yours</div>
   <h2>Оформление</h2>
-  <p>Заполни контактные данные. Магазин свяжется с тобой, чтобы подтвердить наличие, доставку и способ оплаты.</p>
+  <p>Заполни данные получателя. Менеджер свяжется с тобой для подтверждения заказа и доставки.</p>
+  <div class="delivery-warning" role="alert"><div class="delivery-warning-mark">!</div><div><strong>ВАЖНО! ТОЧНАЯ СТОИМОСТЬ ДОСТАВКИ</strong><p>Стоимость доставки рассчитывается индивидуально и сообщается менеджером после оформления заказа. Итоговую сумму подтвердим до оплаты.</p></div></div>
 
-  <label for="customerName">Имя</label>
+  <label for="customerName">ФИО получателя</label>
   <input id="customerName" name="name" autocomplete="name" required maxlength="80" placeholder="Как к тебе обращаться">
   <div class="field-error" id="nameError"></div>
 
-  <label>Способ связи</label>
-  <div class="contact-switch">
-   <button type="button" class="contact-option active" data-contact-type="telegram">Telegram</button>
-   <button type="button" class="contact-option" data-contact-type="phone">Телефон</button>
-  </div>
-
-  <label for="customerContact" id="contactLabel">Telegram username</label>
-  <input id="customerContact" name="contact" autocomplete="off" required maxlength="100" placeholder="@username">
+  <label for="customerContact">Номер телефона получателя *</label>
+  <input id="customerContact" name="phone" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" placeholder="+7 999 123-45-67">
   <div class="field-error" id="contactError"></div>
+  <label for="customerEmail">Электронная почта *</label>
+  <input id="customerEmail" name="email" type="email" autocomplete="email" required maxlength="254" placeholder="name@example.com">
+  <div class="field-error" id="emailError"></div>
 
      
   <label for="deliveryMethod">Способ доставки</label>
@@ -2465,7 +2470,7 @@ input::placeholder, textarea::placeholder{
   <input id="customerCity" name="city" required maxlength="100" autocomplete="address-level2" placeholder="Например, Нижний Новгород">
   <div class="field-error" id="cityError"></div>
 
-  <label for="customerAddress">Адрес или пункт выдачи</label>
+  <label for="customerAddress">Точный адрес или пункт выдачи (ПВЗ) *</label>
   <div class="address-wrap">
    <textarea id="customerAddress" name="address" required maxlength="500" autocomplete="street-address" placeholder="Укажи улицу, дом или адрес пункта выдачи"></textarea>
    <div class="address-suggestions" id="addressSuggestions"></div>
@@ -2544,7 +2549,7 @@ const safeRead=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)
 let cart=safeRead('goldShopCart',[]);
 let favorites=new Set(safeRead('goldShopFavorites',[]));
 let activeFilter='all',activeProduct=null,activeColor='',activeSize='',activeImage=0;
-let contactType='telegram';
+let contactType='phone';
 let addressTimer=null;
 let addressRequest=0;
 
@@ -2904,22 +2909,7 @@ $('checkoutModal').addEventListener('click',e=>{
 });
 
 /* ВЫБОР СПОСОБА СВЯЗИ */
-function setContactType(type){
- contactType=type;
- document.querySelectorAll('[data-contact-type]').forEach(b=>{
-  b.classList.toggle('active',b.dataset.contactType===type);
- });
- $('contactLabel').textContent=type==='telegram'?'Telegram username':'Номер телефона';
- $('customerContact').value='';
- $('customerContact').placeholder=type==='telegram'?'@username':'+7 999 123-45-67';
- $('customerContact').inputMode=type==='telegram'?'text':'tel';
- $('customerContact').autocomplete=type==='telegram'?'off':'tel';
- $('contactError').classList.remove('show');
- $('contactError').textContent='';
-}
-document.querySelectorAll('[data-contact-type]').forEach(b=>{
- b.addEventListener('click',()=>setContactType(b.dataset.contactType));
-});
+function setContactType(type){ contactType='phone'; }
 
 function validateContact(){
  const value=$('customerContact').value.trim();
@@ -2927,17 +2917,10 @@ function validateContact(){
  let valid=false;
  let message='';
 
- if(contactType==='telegram'){
-  const username=value.replace(/^@/,'');
-  valid=/^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(username);
-  if(!value)message='Укажи свой Telegram username.';
-  else if(!valid)message='Проверь username. Нужно 5–32 символа: латинские буквы, цифры и подчёркивания. Первый символ — буква.';
- }else{
-  const digits=value.replace(/\D/g,'');
-  valid=digits.length>=10&&digits.length<=15;
-  if(!value)message='Укажи номер телефона.';
-  else if(!valid)message='Проверь номер телефона. Введи от 10 до 15 цифр.';
- }
+ const digits=value.replace(/\D/g,'');
+ valid=digits.length>=10&&digits.length<=15;
+ if(!value)message='Укажи номер телефона.';
+ else if(!valid)message='Проверь номер телефона. Введи от 10 до 15 цифр.';
  error.textContent=message;
  error.classList.toggle('show',!valid);
  return valid;
@@ -3068,8 +3051,10 @@ $('checkoutForm').addEventListener('submit', async e => {
   const deliveryMethod = $('deliveryMethod').value;
   const city = $('customerCity').value.trim();
   const address = $('customerAddress').value.trim();
+  const email = $('customerEmail').value.trim();
 
   clearError('nameError');
+  clearError('emailError');
   clearError('deliveryMethodError');
   clearError('cityError');
   clearError('addressError');
@@ -3092,6 +3077,10 @@ $('checkoutForm').addEventListener('submit', async e => {
   if (!validateContact()) {
     valid = false;
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
+    showError('emailError', 'Укажи корректную электронную почту.');
+    valid = false;
+  }
 
   if (address.length < 3) {
     showError('addressError', 'Укажи улицу, дом или пункт выдачи.');
@@ -3108,8 +3097,9 @@ $('checkoutForm').addEventListener('submit', async e => {
 
   const payload = {
         customer_name: name,
-    contact_method: contactType,
+    contact_method: 'phone',
     contact: $('customerContact').value.trim(),
+    email,
     delivery_method: deliveryMethod,
     city,
     delivery_address: address,
@@ -3154,7 +3144,7 @@ $('checkoutForm').addEventListener('submit', async e => {
     updateCounts();
 
         $('checkoutForm').reset();
-    setContactType('telegram');
+    setContactType('phone');
     updateDeliveryFields();
 
     $('checkoutModal').classList.remove('open');
