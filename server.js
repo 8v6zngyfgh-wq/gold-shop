@@ -276,19 +276,15 @@ bot.callbackQuery(/^ord:/, async (ctx) => {
   }
 
   try {
-    const { data, error } = await supabase
-      .from("orders")
-      .update({
-        status,
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", orderId)
-      .select("id")
-      .maybeSingle();
+    const { data, error } = await supabase.rpc("change_order_status_and_restore_inventory", {
+      p_order_id: orderId,
+      p_new_status: status,
+      p_actor_telegram_id: ctx.from.id
+    });
 
     if (error) throw error;
 
-    if (!data) {
+    if (!data || !data.order_id) {
       await ctx.answerCallbackQuery({
         text: "Заказ не найден.",
         show_alert: true
@@ -546,15 +542,22 @@ app.patch("/api/admin/orders/:id", requireMiniAppAdmin, async (req, res) => {
     return res.status(400).json({ error: "Некорректный заказ или статус." });
   }
   try {
-    const { data, error } = await supabase
-      .from("orders")
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq("id", orderId)
-      .select("id, status")
-      .maybeSingle();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Заказ не найден." });
-    res.json({ ok: true, order: data });
+    const { data, error } = await supabase.rpc("change_order_status_and_restore_inventory", {
+      p_order_id: orderId,
+      p_new_status: status,
+      p_actor_telegram_id: req.telegramAdmin.id
+    });
+    if (error) {
+      if (String(error.message || "").includes("Order not found")) {
+        return res.status(404).json({ error: "Заказ не найден." });
+      }
+      if (String(error.message || "").includes("Cancelled orders cannot be reopened")) {
+        return res.status(409).json({ error: "Отменённый заказ нельзя автоматически открыть повторно." });
+      }
+      throw error;
+    }
+    if (!data || !data.order_id) return res.status(404).json({ error: "Заказ не найден." });
+    res.json({ ok: true, order: { id: data.order_id, status: data.status, unchanged: Boolean(data.unchanged) } });
   } catch (error) {
     console.error("Admin order status API error:", error);
     res.status(500).json({ error: "Не удалось изменить статус заказа." });
