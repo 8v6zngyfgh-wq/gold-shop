@@ -466,6 +466,60 @@ app.patch("/api/admin/products/:id", requireMiniAppAdmin, async (req, res) => {
   }
 });
 
+
+// Admin orders API
+app.get("/api/admin/orders", requireMiniAppAdmin, async (_req, res) => {
+  try {
+    const { data: orders, error } = await supabase
+      .from("orders")
+      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, total, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    const ids = (orders || []).map(order => order.id);
+    let items = [];
+    if (ids.length) {
+      const { data, error: itemsError } = await supabase
+        .from("order_items")
+        .select("order_id, product_name, selected_color, selected_size, quantity, unit_price")
+        .in("order_id", ids);
+      if (itemsError) throw itemsError;
+      items = data || [];
+    }
+    const itemsByOrder = new Map();
+    for (const item of items) {
+      if (!itemsByOrder.has(item.order_id)) itemsByOrder.set(item.order_id, []);
+      itemsByOrder.get(item.order_id).push(item);
+    }
+    res.json({ orders: (orders || []).map(order => ({ ...order, items: itemsByOrder.get(order.id) || [] })) });
+  } catch (error) {
+    console.error("Admin orders API error:", error);
+    res.status(500).json({ error: "Не удалось загрузить заказы." });
+  }
+});
+
+app.patch("/api/admin/orders/:id", requireMiniAppAdmin, async (req, res) => {
+  const orderId = String(req.params.id || "");
+  const status = String(req.body?.status || "");
+  if (!UUID_PATTERN.test(orderId) || !Object.prototype.hasOwnProperty.call(ORDER_STATUSES, status)) {
+    return res.status(400).json({ error: "Некорректный заказ или статус." });
+  }
+  try {
+    const { data, error } = await supabase
+      .from("orders")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", orderId)
+      .select("id, status")
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Заказ не найден." });
+    res.json({ ok: true, order: data });
+  } catch (error) {
+    console.error("Admin order status API error:", error);
+    res.status(500).json({ error: "Не удалось изменить статус заказа." });
+  }
+});
+
 // Products API
 
 app.get("/api/products", async (_req, res) => {
