@@ -2149,6 +2149,13 @@ input::placeholder, textarea::placeholder{
 
 </style>
 <style>
+/* GOLD SHOP — premium black editorial sections */
+#trust,#delivery-terms{position:relative;isolation:isolate;overflow:hidden;background:#050505;border-top:1px solid rgba(255,255,255,.09);border-bottom:1px solid rgba(255,255,255,.09)}
+#trust:before,#delivery-terms:before{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;background:radial-gradient(ellipse at 14% 8%,rgba(255,255,255,.075),transparent 34%),radial-gradient(ellipse at 88% 58%,rgba(255,255,255,.045),transparent 32%),linear-gradient(180deg,#070707 0%,#030303 100%)}
+#trust .section-head,#delivery-terms .section-head{position:relative}
+#trust>.section-head:first-child h2,#delivery-terms>.section-head h2{font-size:clamp(42px,6vw,76px);letter-spacing:-.045em}
+#trust .kicker,#delivery-terms .kicker{color:#a5a5a5}
+#trust .section-head:first-child>div:after{content:"Проверяй отзывы, знакомься с нашими площадками и задавай вопросы напрямую. Мы за открытость на каждом этапе заказа.";display:block;max-width:560px;margin-top:15px;color:#bdbdbd;font:15px/1.85 Arial,Helvetica,sans-serif}
 .trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
 .trust-card{border:1px solid var(--line);padding:24px;background:#111}
 .trust-card h3{font:24px var(--serif);margin:0 0 10px}
@@ -2181,6 +2188,45 @@ input::placeholder, textarea::placeholder{
 .confirm-card h2{font:34px var(--serif);margin:0 0 10px}
 .confirm-card p{font-size:12px;line-height:1.7;color:#555}
 .confirm-code{font-size:13px;overflow-wrap:anywhere;background:#f1f1f1;padding:12px;margin:14px 0}
+
+.social-proof-grid{position:relative;gap:18px;margin:36px 0 12px}
+.social-proof-card{min-height:290px;padding:30px;background:linear-gradient(155deg,rgba(255,255,255,.055),rgba(255,255,255,.012) 55%),#080808;border:1px solid rgba(255,255,255,.16);box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.social-proof-card:after{content:"";position:absolute;inset:0;pointer-events:none;border-top:1px solid rgba(255,255,255,.12);opacity:.5}
+.social-proof-card:hover{transform:translateY(-6px);border-color:rgba(255,255,255,.55);background:linear-gradient(155deg,rgba(255,255,255,.09),rgba(255,255,255,.02) 55%),#090909}
+.social-proof-mark{width:48px;height:48px;margin-bottom:30px;background:#f5f5f5;color:#080808;border:0;font:700 15px Arial,Helvetica,sans-serif}
+.social-proof-card h3{font-size:clamp(25px,2.3vw,32px);letter-spacing:-.02em}
+.social-proof-card p{font-size:15px;line-height:1.85;color:#c7c7c7}
+.social-proof-action{min-height:50px;font-size:12px;letter-spacing:.07em;text-transform:uppercase}
+.trust-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.13);padding:25px;transition:border-color .25s ease,background .25s ease}
+.trust-card:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.045)}
+.trust-card h3{font-size:26px;color:#f7f7f7}
+.trust-card p,.policy-copy{font-size:14px;line-height:1.9;color:#c0c0c0}
+#trust .section-head[style],#delivery-terms .section-head{margin-top:76px!important}
+#trust .trust-form{max-width:760px;gap:12px}
+#trust .trust-form input{min-height:52px;background:#0d0d0d;border-color:#333;font-size:14px;padding:15px}
+#trust .trust-result,#trust .trust-list{background:#090909;border-color:#292929;padding:22px;font-size:14px;color:#eee}
+#trust .trust-list article{padding:20px 0;line-height:1.9}
+#delivery-terms .trust-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+#delivery-terms .trust-card{min-height:220px}
+#delivery-terms .trust-card h3{font-size:24px}
+#delivery-terms .trust-card p{font-size:14px}
+#delivery-terms .policy-copy{max-width:850px}
+@media(max-width:900px){#delivery-terms .trust-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){
+ #trust,#delivery-terms{padding:66px 6vw}
+ #trust>.section-head:first-child h2,#delivery-terms>.section-head h2{font-size:43px}
+ #trust .section-head:first-child>div:after{font-size:14px}
+ .social-proof-grid{grid-template-columns:1fr;gap:13px;margin-top:25px}
+ .social-proof-card{min-height:0;padding:24px}
+ .social-proof-mark{margin-bottom:21px}
+ .social-proof-card h3{font-size:27px}
+ .social-proof-card p{font-size:15px}
+ #delivery-terms .trust-grid{grid-template-columns:1fr}
+ #delivery-terms .trust-card{min-height:0}
+ #trust .section-head[style],#delivery-terms .section-head{margin-top:58px!important}
+ #trust .trust-form{grid-template-columns:1fr}
+}
+
 @media(max-width:700px){.trust-grid{grid-template-columns:1fr}.trust-form{grid-template-columns:1fr}}
 </style></head>
 
@@ -2283,7 +2329,7 @@ input::placeholder, textarea::placeholder{
 </section>
 
 <section class="section" id="trust">
- <div class="section-head"><div><div class="kicker">GOLD SHOP · OPEN & CLEAR</div><h2>Покупка без вопросов.</h2></div></div>
+ <div class="section-head"><div><div class="kicker">GOLD SHOP / TRANSPARENCY</div><h2>Доверие —<br>в деталях.</h2></div></div>
  <div class="social-proof-grid">
   <article class="social-proof-card">
    <div class="social-proof-mark" aria-hidden="true">TG</div>
@@ -2305,7 +2351,7 @@ input::placeholder, textarea::placeholder{
    <a class="social-proof-action" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать в поддержку <span aria-hidden="true">↗</span></a>
   </article>
  </div>
- <div class="section-head" style="margin-top:65px"><div><div class="kicker">WHY GOLD SHOP</div><h2>Почему нам можно доверять?</h2><p class="policy-copy">Доверие строится на открытости и возможности самостоятельно проверить информацию о магазине.</p></div></div>
+ <div class="section-head" style="margin-top:65px"><div><div class="kicker">WHY GOLD SHOP</div><h2>Открыто. Честно. Понятно.</h2><p class="policy-copy">Не просим верить на слово — даём возможность самостоятельно проверить отзывы, связаться с нами и следить за своим заказом.</p></div></div>
  <div class="trust-grid">
   <article class="trust-card"><h3>Реальные отзывы</h3><p>Мы не придумываем отзывы и не выдаём рекламные тексты за мнения покупателей. Ты можешь самостоятельно посмотреть отзывы и сообщения в нашем Telegram-канале, а также открыть профили магазина на Авито.</p><a class="text-link" href="https://t.me/reviewsgoldsh0p" target="_blank" rel="noopener">Читать отзывы в Telegram ↗</a><br><a class="text-link" href="https://www.avito.ru/user/71517042f8f28c11fbb4e34e6bba7184/profile?src=sharing" target="_blank" rel="noopener">Проверить профиль Авито ↗</a></article>
   <article class="trust-card"><h3>Мы на связи</h3><p>До и после оформления заказа можно связаться с GOLD SHOP напрямую в Telegram и уточнить наличие, детали товара, оплату или доставку.</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Связаться с магазином ↗</a></article>
@@ -2326,13 +2372,19 @@ input::placeholder, textarea::placeholder{
 </section>
 
 <section class="section" id="delivery-terms">
- <div class="section-head"><div><div class="kicker">IMPORTANT INFORMATION</div><h2>Условия покупки.</h2></div></div>
+ <div class="section-head"><div><div class="kicker">GOLD SHOP / DELIVERY & PAYMENT</div><h2>Получение заказа.</h2><p class="policy-copy">Выбери удобный способ доставки при оформлении. Перед оплатой мы подтвердим итоговую стоимость и детали отправки.</p></div></div>
  <div class="trust-grid">
-  <article class="trust-card"><h3>Доставка по России</h3><p>Доступные способы и адрес получения выбираются при оформлении. Стоимость и ориентировочный срок подтверждаются магазином до оплаты. После отправки покупатель получает трек-номер.</p></article>
-  <article class="trust-card"><h3>Оплата</h3><p>Пока оплата согласовывается индивидуально после проверки наличия и итоговой стоимости заказа. Не переводи деньги, пока не получишь подтверждение заказа и понятные инструкции от магазина.</p></article>
-  <article class="trust-card"><h3>Возврат и вопросы</h3><p>Если товар не подошёл, обнаружен недостаток или возникла проблема с доставкой, напиши в поддержку с номером заказа. Обращения рассматриваются в соответствии с применимым законодательством о защите прав потребителей.</p></article>
+  <article class="trust-card"><h3>01 / СДЭК</h3><p>Доставка до пункта выдачи или курьером — конкретный вариант, стоимость и срок согласуем при подтверждении заказа.</p></article>
+  <article class="trust-card"><h3>02 / Почта России</h3><p>Отправка в выбранное отделение. После передачи посылки сообщим трек-номер для отслеживания.</p></article>
+  <article class="trust-card"><h3>03 / Яндекс Доставка</h3><p>Возможность отправки через Яндекс Доставку уточняется по городу и адресу получения до оплаты.</p></article>
+  <article class="trust-card"><h3>04 / Самовывоз</h3><p>Можно забрать заказ в Нижнем Новгороде по согласованию с магазином. Детали встречи подтвердим заранее.</p></article>
  </div>
- <p class="policy-copy" style="margin-top:18px">Продавец предоставляет покупателю необходимые сведения о продавце и условия продажи до оплаты заказа. GOLD SHOP не публикует личные банковские реквизиты на открытой странице.</p>
+ <div class="trust-grid">
+  <article class="trust-card"><h3>Оплата</h3><p>После проверки наличия мы сообщим итоговую сумму и согласуем способ оплаты. Не переводи деньги, пока не получишь подтверждение заказа и понятные инструкции от магазина.</p></article>
+  <article class="trust-card"><h3>Возврат и вопросы</h3><p>Если возникла проблема с товаром или доставкой, напиши в поддержку с номером заказа. Обращения рассматриваются с учётом применимых правил защиты прав потребителей.</p></article>
+  <article class="trust-card"><h3>Отслеживание</h3><p>После отправки передадим доступный трек-номер или ссылку для отслеживания, чтобы ты мог следить за движением посылки.</p></article>
+ </div>
+ <p class="policy-copy" style="margin-top:22px">Стоимость доставки и ориентировочные сроки подтверждаются до оплаты. Доступность конкретной службы зависит от города и адреса получателя. Личные банковские реквизиты не размещаются в открытом доступе.</p>
 </section>
 </main>
 
