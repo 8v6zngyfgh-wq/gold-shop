@@ -2187,6 +2187,43 @@ input::placeholder, textarea::placeholder{
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
+
+/* GOLD SHOP — refined sale presentation across every product card */
+.catalog .product-sale-badge{
+  top:12px;bottom:auto;left:12px;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 11px;
+  background:linear-gradient(135deg,#a52b35,#741d25);
+  border:1px solid rgba(255,255,255,.42);
+  box-shadow:0 5px 18px rgba(0,0,0,.22);
+  color:#fff;font-size:9px;font-weight:800;letter-spacing:.14em;
+}
+.catalog .price-stack{
+  width:100%;display:flex;align-items:baseline;justify-content:flex-start;
+  flex-wrap:wrap;gap:8px 10px;margin-top:4px;
+}
+.catalog .price-current{
+  font-size:clamp(19px,2vw,25px);font-weight:800;letter-spacing:-.055em;
+  color:#090909;order:0;
+}
+.catalog .price-old{
+  font-size:12px;color:#8a8a8a;text-decoration:line-through;
+  text-decoration-thickness:1.4px;order:1;
+}
+.catalog .discount-pill{
+  background:#a52b35;color:#fff;border-radius:2px;
+  padding:5px 7px;font-size:9px;font-weight:800;letter-spacing:.06em;order:2;
+}
+.modal-price-stack{gap:10px 13px;align-items:center}
+.modal-price-current{font-size:clamp(28px,3.2vw,38px);font-weight:800;letter-spacing:-.055em}
+.modal-price-old{font-size:15px;color:#8b8b8b;text-decoration-thickness:1.5px}
+.modal-discount{background:#a52b35;color:#fff;padding:7px 10px;font-size:10px;font-weight:800;letter-spacing:.08em}
+@media(max-width:620px){
+ .catalog .product-sale-badge{top:8px;left:8px;bottom:auto;padding:7px 8px;font-size:8px}
+ .catalog .price-current{font-size:19px}
+ .catalog .price-old{font-size:11px}
+}
+
 </style>
 <style>
 /* GOLD SHOP — premium black editorial sections */
