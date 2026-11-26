@@ -1735,6 +1735,118 @@ footer{
  letter-spacing:.03em;
 }
 
+
+/* Premium catalog search */
+.catalog-search{
+ position:relative;
+ display:flex;
+ align-items:center;
+ min-height:58px;
+ margin:26px 0 4px;
+ border:1px solid rgba(255,255,255,.2);
+ background:linear-gradient(110deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+ transition:border-color .25s ease,background .25s ease;
+}
+.catalog-search:focus-within{
+ border-color:rgba(255,255,255,.65);
+ background:rgba(255,255,255,.055);
+}
+.catalog-search-icon{
+ position:absolute;
+ left:20px;
+ width:15px;
+ height:15px;
+ border:1.4px solid #aaa;
+ border-radius:50%;
+ pointer-events:none;
+}
+.catalog-search-icon:after{
+ content:"";
+ position:absolute;
+ width:6px;
+ height:1.4px;
+ background:#aaa;
+ right:-5px;
+ bottom:-2px;
+ transform:rotate(48deg);
+ transform-origin:left center;
+}
+.catalog-search input{
+ width:100%;
+ min-width:0;
+ height:56px;
+ padding:0 54px 0 52px;
+ border:0;
+ outline:0;
+ background:transparent;
+ color:#f5f5f5;
+ font-size:12px;
+ letter-spacing:.025em;
+}
+.catalog-search input::placeholder{color:#858585;opacity:1}
+.catalog-search input::-webkit-search-cancel-button{-webkit-appearance:none}
+.catalog-search-clear{
+ position:absolute;
+ right:13px;
+ top:50%;
+ transform:translateY(-50%);
+ width:32px;
+ height:32px;
+ border:0;
+ border-radius:50%;
+ background:rgba(255,255,255,.09);
+ color:#fff;
+ font-size:21px;
+ line-height:1;
+ cursor:pointer;
+}
+.catalog-search-clear[hidden]{display:none}
+.search-empty{
+ grid-column:1/-1;
+ min-height:250px;
+ display:flex;
+ flex-direction:column;
+ align-items:center;
+ justify-content:center;
+ text-align:center;
+ padding:42px 20px;
+ border:1px solid rgba(255,255,255,.12);
+}
+.search-empty-kicker{
+ color:#999;
+ font-size:9px;
+ letter-spacing:.2em;
+ margin-bottom:17px;
+}
+.search-empty strong{
+ font:400 clamp(26px,4vw,38px) var(--serif);
+}
+.search-empty p{
+ margin:10px 0 22px;
+ color:#999;
+ font-size:11px;
+ line-height:1.7;
+}
+.search-empty button{
+ padding:12px 17px;
+ border:1px solid rgba(255,255,255,.5);
+ background:transparent;
+ color:#fff;
+ font-size:9px;
+ letter-spacing:.13em;
+ text-transform:uppercase;
+ cursor:pointer;
+ transition:background .2s ease,color .2s ease;
+}
+.search-empty button:hover{background:#fff;color:#080808}
+@media(max-width:620px){
+ .catalog-search{min-height:54px;margin:22px 0 2px}
+ .catalog-search input{height:52px;padding-left:46px;font-size:11px}
+ .catalog-search-icon{left:17px}
+ .filters{margin:20px 0}
+ .search-empty{min-height:220px}
+}
+
 </style>
 </head>
 
@@ -1801,6 +1913,11 @@ footer{
 
 <section class="section catalog" id="catalog">
 <div class="kicker" id="productCountLabel">GOLD SHOP</div>
+ <div class="catalog-search" role="search">
+  <span class="catalog-search-icon" aria-hidden="true"></span>
+  <input id="productSearch" type="search" autocomplete="off" spellcheck="false" placeholder="Найти вещь по названию, категории или размеру" aria-label="Поиск по каталогу">
+  <button class="catalog-search-clear" id="searchClear" type="button" aria-label="Очистить поиск" hidden>×</button>
+ </div>
  <div class="filters">
   <div class="filter-list" id="filterList">
    <button class="filter active" data-filter="all">Все вещи</button>
@@ -2111,17 +2228,29 @@ function initCardParticles(){
 
 function renderProducts(){
  const sort=$('sortSelect').value;
- let list=PRODUCTS.filter(p=>activeFilter==='all'||p.category===activeFilter);
+ const query=$('productSearch').value.trim().toLocaleLowerCase('ru');
+ let list=PRODUCTS.filter(p=>{
+  if(activeFilter!=='all'&&p.category!==activeFilter)return false;
+  if(!query)return true;
+  const searchable=[
+   p.name,p.categoryLabel,p.description,p.category,
+   ...(p.variants||[]).flatMap(v=>[v.color,...Object.keys(v.sizes||{})])
+  ].join(' ').toLocaleLowerCase('ru');
+  return searchable.includes(query);
+ });
 
  if(sort==='low')list.sort((a,b)=>a.price-b.price);
  if(sort==='high')list.sort((a,b)=>b.price-a.price);
 
- $('productCountLabel').textContent=list.length+' ITEMS';
+ $('productCountLabel').textContent=query?'НАЙДЕНО · '+list.length:' '+list.length+' ITEMS';
+ $('searchClear').hidden=!query;
 
  const grid=$('productGrid');
 
  if(!list.length){
-  grid.innerHTML='<div class="empty-state">Пока здесь нет товаров.</div>';
+  grid.innerHTML=query
+   ?'<div class="empty-state search-empty"><span class="search-empty-kicker">GOLD SHOP / SEARCH</span><strong>Ничего не найдено</strong><p>Попробуй другое название, категорию или размер.</p><button type="button" data-clear-search>Сбросить поиск ↗</button></div>'
+   :'<div class="empty-state">Пока здесь нет товаров.</div>';
   return;
  }
 
@@ -2156,6 +2285,12 @@ $('filterList').addEventListener('click',e=>{
  const b=e.target.closest('[data-filter]');
  if(b)setFilter(b.dataset.filter);
 });
+$('productSearch').addEventListener('input',renderProducts);
+$('searchClear').addEventListener('click',()=>{
+ $('productSearch').value='';
+ renderProducts();
+ $('productSearch').focus();
+});
 $('sortSelect').addEventListener('change',renderProducts);
 document.querySelectorAll('[data-promo-filter]').forEach(a=>a.addEventListener('click',()=>setFilter(a.dataset.promoFilter)));
 $('menuToggle').addEventListener('click',()=>$('catalog').scrollIntoView({behavior:'smooth'}));
@@ -2179,6 +2314,13 @@ $('favoritesLink').addEventListener('click',e=>{
 });
 
 $('productGrid').addEventListener('click',e=>{
+ const clear=e.target.closest('[data-clear-search]');
+ if(clear){
+  $('productSearch').value='';
+  renderProducts();
+  $('productSearch').focus();
+  return;
+ }
  const fav=e.target.closest('[data-favorite]');
  if(fav){
   e.stopPropagation();
