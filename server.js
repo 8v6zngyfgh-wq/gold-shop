@@ -138,7 +138,8 @@ const deliveryLabel =
     `Итого: ${money(order.total)}`,
     "",
     `Имя: ${order.customer_name}`,
-    `${contactLabel}: ${order.phone}`,
+    `Телефон: ${order.phone}`,
+`Email: ${order.email || "—"}`,
     `Город: ${order.city}`,
     `Адрес: ${order.delivery_address}`,
     `Способ доставки: ${deliveryLabel}`,
@@ -216,7 +217,7 @@ bot.command("orders", async (ctx) => {
     const { data, error } = await supabase
       .from("orders")
       .select(
-        "id, customer_name, phone, contact_method, delivery_method, city, delivery_address, total, status, created_at"
+        "id, customer_name, phone, email, contact_method, delivery_method, city, delivery_address, total, status, created_at"
       )
       .order("created_at", { ascending: false })
       .limit(10);
@@ -236,7 +237,8 @@ const deliveryLabel =
       const message = [
         `Заказ ${order.id}`,
         `Имя: ${order.customer_name}`,
-        `${contactLabel}: ${order.phone}`,
+        `Телефон: ${order.phone}`,
+`Email: ${order.email || "—"}`,
         `Город: ${order.city}`,
         `Адрес: ${order.delivery_address}`,
         `Способ доставки: ${deliveryLabel}`,
@@ -824,6 +826,7 @@ app.post("/api/orders", async (req, res) => {
 const contactMethod = String(body.contact_method || "").trim();
 const deliveryMethod = String(body.delivery_method || "").trim();
 const contact = String(body.contact || "").trim();
+const email = String(body.email || "").trim().toLowerCase();
 const city = String(body.city || "").trim();
 const deliveryAddress = String(body.delivery_address || "").trim();
 const comment = String(body.comment || "").trim();
@@ -840,6 +843,9 @@ const requestedItems = body.items;
         error: "Выбери корректный способ связи."
       });
     }
+if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  return res.status(400).json({ error: "Укажи корректную электронную почту." });
+}
 if (!Object.prototype.hasOwnProperty.call(DELIVERY_METHODS, deliveryMethod)) {
   return res.status(400).json({
     error: "Выбери корректный способ доставки."
@@ -972,6 +978,7 @@ if (contactMethod === "telegram") {
       .insert({
         customer_name: customerName,
         phone: contact,
+        email,
         contact_method: contactMethod,
         delivery_method: deliveryMethod,
         city,
@@ -981,7 +988,7 @@ if (contactMethod === "telegram") {
         status: "new",
         total
       })
-      .select("id, customer_name, phone, contact_method, delivery_method, city, delivery_address, comment, status, total")
+      .select("id, customer_name, phone, email, contact_method, delivery_method, city, delivery_address, comment, status, total")
       .single();
 
 
