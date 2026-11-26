@@ -429,6 +429,39 @@ function requireMiniAppAdmin(req, res, next) {
   next();
 }
 
+app.post("/api/address/suggest", rateLimit({ windowMs: 60_000, max: 20, scope: "address-suggest" }), async (req, res) => {
+  const token = process.env.DADATA_API_TOKEN;
+  const query = typeof req.body?.query === "string" ? req.body.query.trim() : "";
+  if (query.length < 3 || query.length > 120) {
+    return res.status(400).json({ error: "Введи не менее 3 символов адреса." });
+  }
+  if (!token) {
+    return res.status(503).json({ error: "Подсказки адреса пока не подключены. Введи адрес вручную." });
+  }
+  try {
+    const upstream = await fetch("https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Token " + token
+      },
+      body: JSON.stringify({ query, count: 8 })
+    });
+    const payload = await upstream.json().catch(() => ({}));
+    if (!upstream.ok) {
+      console.error("DaData upstream error:", upstream.status);
+      return res.status(502).json({ error: "Подсказки адреса временно недоступны. Введи адрес вручную." });
+    }
+    res.set("Cache-Control", "no-store");
+    res.json({ suggestions: (Array.isArray(payload.suggestions) ? payload.suggestions : [])
+      .slice(0, 8).map(item => ({ value: String(item.value || "") })).filter(item => item.value) });
+  } catch (error) {
+    console.error("Address suggestion proxy error:", error);
+    res.status(502).json({ error: "Не удалось получить подсказки адреса. Введи адрес вручную." });
+  }
+});
+
 // Admin product management API
 
 app.get("/api/admin/products", requireMiniAppAdmin, async (_req, res) => {
