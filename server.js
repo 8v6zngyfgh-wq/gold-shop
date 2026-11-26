@@ -432,6 +432,7 @@ function requireMiniAppAdmin(req, res, next) {
 }
 
 app.post("/api/address/suggest", rateLimit({ windowMs: 60_000, max: 20, scope: "address-suggest" }), async (req, res) => {
+  res.set("Cache-Control", "no-store");
   const token = process.env.DADATA_API_TOKEN;
   const query = typeof req.body?.query === "string" ? req.body.query.trim() : "";
   if (query.length < 3 || query.length > 120) {
@@ -448,7 +449,8 @@ app.post("/api/address/suggest", rateLimit({ windowMs: 60_000, max: 20, scope: "
         "Accept": "application/json",
         "Authorization": "Token " + token
       },
-      body: JSON.stringify({ query, count: 8 })
+      body: JSON.stringify({ query, count: 8 }),
+      signal: AbortSignal.timeout(5000)
     });
     const payload = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
@@ -881,6 +883,7 @@ app.get("/api/public/reviews", async (_req, res) => {
 });
 
 app.get("/api/orders/:id", rateLimit({ windowMs: 10 * 60_000, max: 15, scope: "order-lookup" }), async (req, res) => {
+  res.set("Cache-Control", "no-store");
   const orderId = String(req.params.id || "");
   const contact = String(req.query.contact || "").trim();
   if (!UUID_PATTERN.test(orderId) || contact.length < 5 || contact.length > 100) {
@@ -974,6 +977,7 @@ app.post("/api/admin/reviews", rateLimit({ windowMs: 60_000, max: 10, scope: "ad
 // Create order API
 
 app.post("/api/orders", rateLimit({ windowMs: 10 * 60_000, max: 10, scope: "create-order" }), async (req, res) => {
+  res.set("Cache-Control", "no-store");
   let createdOrderId = null;
 
   try {
