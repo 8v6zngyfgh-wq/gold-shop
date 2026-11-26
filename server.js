@@ -437,9 +437,50 @@ app.patch("/api/admin/products/:id", requireMiniAppAdmin, async (req, res) => {
       (!Array.isArray(update.images) || update.images.some(url => typeof url !== "string" || !url.toLowerCase().startsWith("https://")))) {
     return res.status(400).json({ error: "Фотографии должны быть HTTPS-ссылками." });
   }
-  if (Object.prototype.hasOwnProperty.call(update, "variants") &&
-      !Array.isArray(update.variants)) {
-    return res.status(400).json({ error: "Некорректные варианты товара." });
+  if (Object.prototype.hasOwnProperty.call(update, "variants")) {
+    if (!Array.isArray(update.variants)) {
+      return res.status(400).json({ error: "Некорректные варианты товара." });
+    }
+    const seenColors = new Set();
+    for (const variant of update.variants) {
+      if (!variant || typeof variant !== "object" || Array.isArray(variant) ||
+          typeof variant.color !== "string" || !variant.color.trim() ||
+          variant.color.trim().length > 40 ||
+          !variant.sizes || typeof variant.sizes !== "object" ||
+          Array.isArray(variant.sizes) || !Object.keys(variant.sizes).length) {
+        return res.status(400).json({ error: "Проверь цвет и размеры товара." });
+      }
+      const colorKey = variant.color.trim().toLocaleLowerCase("ru");
+      if (seenColors.has(colorKey)) {
+        return res.status(400).json({ error: "Цвета товара не должны повторяться." });
+      }
+      seenColors.add(colorKey);
+      for (const [size, quantity] of Object.entries(variant.sizes)) {
+        if (!size.trim() || size.length > 30 ||
+            !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) {
+          return res.status(400).json({ error: "Остаток каждого размера должен быть целым числом от 0 до 9999." });
+        }
+      }
+      if (variant.images !== undefined &&
+          (!Array.isArray(variant.images) ||
+           variant.images.some(url => typeof url !== "string" || !url.toLowerCase().startsWith("https://")))) {
+        return res.status(400).json({ error: "Фотографии вариантов должны быть HTTPS-ссылками." });
+      }
+    }
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "description") &&
+      (typeof update.description !== "string" || update.description.length > 3000)) {
+    return res.status(400).json({ error: "Описание слишком длинное или имеет неверный формат." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "category") &&
+      (typeof update.category !== "string" || update.category.length > 40)) {
+    return res.status(400).json({ error: "Некорректная категория товара." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "sort_order")) {
+    if (!Number.isInteger(Number(update.sort_order))) {
+      return res.status(400).json({ error: "Некорректный порядок товара." });
+    }
+    update.sort_order = Number(update.sort_order);
   }
   if (Object.prototype.hasOwnProperty.call(update, "is_active") &&
       typeof update.is_active !== "boolean") {
