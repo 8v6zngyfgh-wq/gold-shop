@@ -4,7 +4,7 @@
 const express = require("express");
 const { Bot } = require("grammy");
 const { createClient } = require("@supabase/supabase-js");
-const { timingSafeEqual, createHmac } = require("node:crypto");
+const { timingSafeEqual, createHmac, randomUUID } = require("node:crypto");
 
 const requiredEnv = ["BOT_TOKEN", "SUPABASE_URL", "SUPABASE_SECRET_KEY"];
 
@@ -442,6 +442,72 @@ app.get("/api/admin/products", requireMiniAppAdmin, async (_req, res) => {
   } catch (error) {
     console.error("Admin products API error:", error);
     res.status(500).json({ error: "Не удалось загрузить товары." });
+  }
+});
+
+app.post("/api/admin/products", requireMiniAppAdmin, async (req, res) => {
+  const body = req.body || {};
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const category = typeof body.category === "string" ? body.category.trim() : "";
+  const description = typeof body.description === "string" ? body.description : "";
+  const price = Number(body.price);
+  const oldPrice = body.old_price === "" || body.old_price === undefined ? null : body.old_price;
+  const images = Array.isArray(body.images) ? body.images : [];
+  const variants = Array.isArray(body.variants) ? body.variants : [];
+
+  if (name.length < 2 || name.length > 120 || !category || category.length > 40 ||
+      !Number.isFinite(price) || price < 0 || price > 100000000 ||
+      description.length > 3000 || images.length < 1 || images.length > 20 ||
+      images.some(url => typeof url !== "string" || url.length > 1000 || !/^https:\/\//i.test(url)) ||
+      !Array.isArray(body.variants) || variants.length < 1 || variants.length > 30) {
+    return res.status(400).json({ error: "Проверь название, категорию, цену, описание и фотографии товара." });
+  }
+  if (oldPrice !== null && (!Number.isFinite(Number(oldPrice)) || Number(oldPrice) < 0 || Number(oldPrice) > 100000000)) {
+    return res.status(400).json({ error: "Некорректная старая цена." });
+  }
+
+  const seenColors = new Set();
+  const allSizes = new Set();
+  for (const variant of variants) {
+    if (!variant || typeof variant !== "object" || Array.isArray(variant) ||
+        typeof variant.color !== "string" || !variant.color.trim() || variant.color.trim().length > 40 ||
+        !variant.sizes || typeof variant.sizes !== "object" || Array.isArray(variant.sizes) ||
+        !Object.keys(variant.sizes).length || Object.keys(variant.sizes).length > 30) {
+      return res.status(400).json({ error: "Проверь цвета и размеры товара." });
+    }
+    const colorKey = variant.color.trim().toLocaleLowerCase("ru");
+    if (seenColors.has(colorKey)) return res.status(400).json({ error: "Цвета товара не должны повторяться." });
+    seenColors.add(colorKey);
+    for (const [size, quantity] of Object.entries(variant.sizes)) {
+      if (!size.trim() || size.length > 30 || !Number.isInteger(quantity) || quantity < 0 || quantity > 9999) {
+        return res.status(400).json({ error: "Остаток каждого размера должен быть целым числом от 0 до 9999." });
+      }
+      allSizes.add(size);
+    }
+    if (variant.images !== undefined &&
+        (!Array.isArray(variant.images) || variant.images.length > 20 ||
+         variant.images.some(url => typeof url !== "string" || url.length > 1000 || !/^https:\/\//i.test(url)))) {
+      return res.status(400).json({ error: "Фотографии вариантов должны быть HTTPS-ссылками." });
+    }
+  }
+
+  try {
+    const { data: lastProduct, error: lastError } = await supabase.from("products")
+      .select("sort_order").order("sort_order", { ascending: false }).limit(1).maybeSingle();
+    if (lastError) throw lastError;
+    const { data, error } = await supabase.from("products").insert({
+      slug: "product-" + randomUUID(),
+      name, category, description, price,
+      old_price: oldPrice === null ? null : Number(oldPrice),
+      images, variants, sizes: [...allSizes],
+      is_active: body.is_active !== false,
+      sort_order: Number(lastProduct?.sort_order || 0) + 1
+    }).select("id, name, price, old_price, category, description, images, sizes, variants, is_active, sort_order").single();
+    if (error) throw error;
+    res.status(201).json({ ok: true, product: data });
+  } catch (error) {
+    console.error("Admin product creation error:", error);
+    res.status(500).json({ error: "Не удалось создать товар. Проверь данные и попробуй ещё раз." });
   }
 });
 
