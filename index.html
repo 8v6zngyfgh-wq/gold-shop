@@ -2148,7 +2148,28 @@ input::placeholder, textarea::placeholder{
 }
 
 </style>
-</head>
+<style>
+.trust-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:24px}
+.trust-card{border:1px solid var(--line);padding:22px;background:#111}
+.trust-card h3{font:24px var(--serif);margin:0 0 10px}
+.trust-card p,.policy-copy{font-size:12px;line-height:1.8;color:var(--muted)}
+.trust-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.trust-form input,.trust-form textarea{width:100%;background:#111;color:#fff;border:1px solid var(--line);padding:13px;font-size:12px}
+.trust-form button{grid-column:1/-1}
+.trust-result,.trust-list{border:1px solid var(--line);padding:16px;margin-top:14px;background:#111;font-size:12px;line-height:1.8}
+.trust-list article{padding:14px 0;border-bottom:1px solid var(--line)}
+.trust-list article:last-child{border-bottom:0}
+.trust-list img{width:100%;max-width:220px;aspect-ratio:4/5;object-fit:cover;margin:10px 8px 0 0}
+.consent-line{display:flex;gap:9px;align-items:flex-start;margin:16px 0;color:var(--muted);font-size:10px;line-height:1.6}
+.consent-line input{width:auto;margin-top:2px}
+#orderConfirmation{position:fixed;inset:0;z-index:90;background:#000b;display:none;align-items:center;justify-content:center;padding:18px}
+#orderConfirmation.open{display:flex}
+.confirm-card{width:min(480px,100%);background:#fff;color:#111;padding:28px}
+.confirm-card h2{font:34px var(--serif);margin:0 0 10px}
+.confirm-card p{font-size:12px;line-height:1.7;color:#555}
+.confirm-code{font-size:13px;overflow-wrap:anywhere;background:#f1f1f1;padding:12px;margin:14px 0}
+@media(max-width:700px){.trust-grid{grid-template-columns:1fr}.trust-form{grid-template-columns:1fr}}
+</style></head>
 
 <body>
 <div class="announcement">Complimentary delivery on selected orders · GOLD SHOP</div>
@@ -2247,12 +2268,42 @@ input::placeholder, textarea::placeholder{
   <a class="btn outline" href="#catalog">Исследовать каталог ↗</a>
  </div>
 </section>
+
+<section class="section" id="trust">
+ <div class="section-head"><div><div class="kicker">GOLD SHOP · OPEN & CLEAR</div><h2>Покупка без вопросов.</h2></div></div>
+ <div class="trust-grid">
+  <article class="trust-card"><h3>Отзывы</h3><p>Публикуем только отзывы реальных покупателей после завершённого заказа и с их разрешения. Фотографии показываем только с согласия автора.</p></article>
+  <article class="trust-card"><h3>Отправки</h3><p>Здесь отображаются реальные отправленные и завершённые заказы, если покупатель разрешил показать обезличенную информацию.</p></article>
+  <article class="trust-card"><h3>Поддержка</h3><p>По любому вопросу о товаре, заказе или доставке можно написать магазину в Telegram.</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать в Telegram ↗</a></article>
+ </div>
+ <div class="section-head" style="margin-top:65px"><div><div class="kicker">ORDER STATUS</div><h2>Проверить заказ.</h2><p class="policy-copy">Введи полный номер заказа и тот же Telegram username или номер телефона, который указал при оформлении.</p></div></div>
+ <form class="trust-form" id="orderLookupForm">
+  <input id="lookupOrderId" required maxlength="36" placeholder="Полный номер заказа">
+  <input id="lookupContact" required maxlength="100" placeholder="Telegram username или телефон">
+  <button class="btn" type="submit">Найти заказ ↗</button>
+ </form>
+ <div class="trust-result" id="orderLookupResult" hidden></div>
+ <div class="section-head" style="margin-top:65px"><div><div class="kicker">REAL SHIPMENTS</div><h2>История отправок.</h2></div></div>
+ <div class="trust-list" id="publicShipments"><p class="policy-copy">Загружаем подтверждённые отправки…</p></div>
+ <div class="section-head" style="margin-top:65px"><div><div class="kicker">CUSTOMER STORIES</div><h2>Отзывы покупателей.</h2></div></div>
+ <div class="trust-list" id="publicReviews"><p class="policy-copy">Загружаем отзывы…</p></div>
+</section>
+
+<section class="section" id="delivery-terms">
+ <div class="section-head"><div><div class="kicker">IMPORTANT INFORMATION</div><h2>Условия покупки.</h2></div></div>
+ <div class="trust-grid">
+  <article class="trust-card"><h3>Доставка по России</h3><p>Доступные способы и адрес получения выбираются при оформлении. Стоимость и ориентировочный срок подтверждаются магазином до оплаты. После отправки покупатель получает трек-номер.</p></article>
+  <article class="trust-card"><h3>Оплата</h3><p>Пока оплата согласовывается индивидуально после проверки наличия и итоговой стоимости заказа. Не переводи деньги, пока не получишь подтверждение заказа и понятные инструкции от магазина.</p></article>
+  <article class="trust-card"><h3>Возврат и вопросы</h3><p>Если товар не подошёл, обнаружен недостаток или возникла проблема с доставкой, напиши в поддержку с номером заказа. Обращения рассматриваются в соответствии с применимым законодательством о защите прав потребителей.</p></article>
+ </div>
+ <p class="policy-copy" style="margin-top:18px">Продавец предоставляет покупателю необходимые сведения о продавце и условия продажи до оплаты заказа. GOLD SHOP не публикует личные банковские реквизиты на открытой странице.</p>
+</section>
 </main>
 
 <footer>
  <div class="footer-top">
   <div><div class="footer-logo">GOLD SHOP</div><p class="footer-note">Contemporary streetwear. Curated with attention to every detail.</p></div>
-  <div><div class="kicker" style="color:#aaa">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Telegram</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать магазину ↗</a></div>
+  <div><div class="kicker" style="color:#aaa">Информация</div><p><a class="text-link" href="#trust">Отзывы и история отправок</a></p><p><a class="text-link" href="#delivery-terms">Доставка, оплата и возврат</a></p><div class="kicker" style="color:#aaa;margin-top:18px">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Telegram</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать магазину ↗</a></div>
  </div>
  <div class="footer-bottom"><span>© GOLD SHOP · CONTEMPORARY STREETWEAR</span><span>Designed for everyday expression</span></div>
 </footer>
@@ -2338,11 +2389,15 @@ input::placeholder, textarea::placeholder{
   <label for="customerComment">Комментарий (необязательно)</label>
   <textarea id="customerComment" name="comment" maxlength="500" placeholder="Пожелания к заказу"></textarea>
 
+  <label class="consent-line"><input type="checkbox" id="publicOrderConsent">Я разрешаю GOLD SHOP показывать обезличенную информацию об отправке моего заказа в истории отправок. Это необязательно и не влияет на оформление заказа.</label>
      <button class="btn" id="checkoutSubmit" type="submit">Оформить заказ</button>
    <p class="modal-note">После оформления заказ сохранится в системе GOLD SHOP. Администратор свяжется с тобой для подтверждения.</p>
  </form>
 </div>
 
+<div id="orderConfirmation" role="dialog" aria-modal="true" aria-labelledby="confirmedTitle">
+ <div class="confirm-card"><div class="kicker">GOLD SHOP · ORDER RECEIVED</div><h2 id="confirmedTitle">Заказ принят.</h2><p>Сохрани полный номер заказа. По нему и контактам из оформления можно проверить статус на сайте. Магазин свяжется с тобой для подтверждения наличия, доставки и оплаты.</p><div class="confirm-code" id="confirmedOrderId"></div><button class="btn" id="copyOrderId" type="button">Скопировать номер</button><button class="btn outline" id="closeOrderConfirmation" type="button" style="width:100%;margin-top:10px">Закрыть</button></div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -2971,6 +3026,7 @@ $('checkoutForm').addEventListener('submit', async e => {
     city,
     delivery_address: address,
     comment: $('customerComment').value.trim(),
+    public_order_consent: $('publicOrderConsent').checked,
     items: cart.map(item => ({
       id: item.id,
       color: item.color,
@@ -3015,8 +3071,9 @@ $('checkoutForm').addEventListener('submit', async e => {
 
     $('checkoutModal').classList.remove('open');
     closeCart();
-
-    toast('Заказ №' + result.order_id.slice(0, 8) + ' оформлен!');
+    $('confirmedOrderId').textContent = result.order_id;
+    $('orderConfirmation').classList.add('open');
+    toast('Заказ оформлен! Сохрани его номер.');
 
   } catch (error) {
     console.error('Ошибка оформления заказа:', error);
@@ -3065,6 +3122,36 @@ document.addEventListener('keydown',e=>{
 })();
 
 
+
+
+/* PUBLIC TRUST SECTIONS */
+const API_BASE = 'https://gold-shop-api-gv5e.onrender.com';
+const publicEsc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const publicStatus = {new:'Принят',confirmed:'Подтверждён',shipped:'Отправлен',completed:'Завершён',cancelled:'Отменён'};
+$('orderLookupForm').addEventListener('submit', async e => {
+ e.preventDefault();
+ const box=$('orderLookupResult');box.hidden=false;box.textContent='Проверяем заказ…';
+ const id=$('lookupOrderId').value.trim(),contact=$('lookupContact').value.trim();
+ try{
+  const response=await fetch(API_BASE+'/api/orders/'+encodeURIComponent(id)+'?contact='+encodeURIComponent(contact));
+  const data=await response.json();if(!response.ok)throw new Error(data.error||'Заказ не найден.');
+  const o=data.order;
+  box.innerHTML='<b>Заказ '+publicEsc(o.id)+'</b><br>Статус: '+publicEsc(publicStatus[o.status]||o.status)+'<br>Город: '+publicEsc(o.city||'—')+'<br>Сумма: '+new Intl.NumberFormat('ru-RU').format(Number(o.total)||0)+' ₽<br>Состав: '+(o.items||[]).map(i=>publicEsc(i.product_name)+' · '+publicEsc(i.selected_color)+' · '+publicEsc(i.selected_size)+' × '+publicEsc(i.quantity)).join('<br>')+(o.tracking_number?'<br>Трек-номер: <b>'+publicEsc(o.tracking_number)+'</b>':'')+(o.tracking_url?'<br><a class="text-link" target="_blank" rel="noopener" href="'+publicEsc(o.tracking_url)+'">Отследить посылку ↗</a>':'');
+ }catch(error){box.textContent=error.message||'Не удалось проверить заказ.'}
+});
+$('closeOrderConfirmation').addEventListener('click',()=>$('orderConfirmation').classList.remove('open'));
+$('copyOrderId').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('confirmedOrderId').textContent);$('copyOrderId').textContent='Скопировано'}catch{$('copyOrderId').textContent='Выдели номер вручную'}});
+async function loadPublicTrust(){
+ try{
+  const [shipmentsResponse,reviewsResponse]=await Promise.all([fetch(API_BASE+'/api/public/shipments'),fetch(API_BASE+'/api/public/reviews')]);
+  const shipments=await shipmentsResponse.json(),reviews=await reviewsResponse.json();
+  const shipBox=$('publicShipments');
+  shipBox.innerHTML=shipmentsResponse.ok&&shipments.shipments?.length?shipments.shipments.map(x=>'<article><b>Заказ · '+publicEsc(x.code)+'</b><br>'+publicEsc(x.city)+' · '+publicEsc(({cdek:'СДЭК',post:'Почта России',pickup:'Самовывоз',yandex:'Яндекс Доставка'})[x.delivery_method]||x.delivery_method)+'<br>'+publicEsc(publicStatus[x.status]||x.status)+' · '+new Date(x.created_at).toLocaleDateString('ru-RU')+'<br>'+x.items.map(publicEsc).join(', ')+'</article>').join(''):'<p class="policy-copy">Пока нет отправок, которые покупатели разрешили показать публично. Новые подтверждённые отправления появятся здесь автоматически.</p>';
+  const reviewBox=$('publicReviews');
+  reviewBox.innerHTML=reviewsResponse.ok&&reviews.reviews?.length?reviews.reviews.map(x=>'<article><b>'+publicEsc(x.display_name)+'</b><p>'+publicEsc(x.review_text)+'</p>'+(x.photo_urls||[]).map(url=>'<img loading="lazy" src="'+publicEsc(url)+'" alt="Фото товара от покупателя">').join('')+'</article>').join(''):'<p class="policy-copy">Пока нет опубликованных отзывов. Мы добавляем только отзывы реальных покупателей с их разрешения.</p>';
+ }catch{ $('publicShipments').textContent='История отправок временно недоступна.';$('publicReviews').textContent='Отзывы временно недоступны.'}
+}
+loadPublicTrust();
 
 loadProducts();
 </script>
