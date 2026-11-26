@@ -2224,6 +2224,20 @@ input::placeholder, textarea::placeholder{
  .catalog .price-old{font-size:11px}
 }
 
+
+/* Предупреждение о VPN перед входом в магазин */
+.vpn-gate{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(255,255,255,.97);color:#111}
+.vpn-gate[hidden]{display:none}
+.vpn-gate-card{width:min(460px,100%);padding:clamp(28px,6vw,48px);border:1px solid #deded9;background:#fff;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.09)}
+.vpn-gate-mark{width:52px;height:52px;margin:0 auto 24px;border:1px solid #111;border-radius:50%;display:grid;place-items:center;font-size:23px}
+.vpn-gate-kicker{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#777}
+.vpn-gate h1{font:400 clamp(34px,8vw,48px)/1.05 Georgia,"Times New Roman",serif;letter-spacing:-.04em;margin:16px 0}
+.vpn-gate p{font-size:13px;line-height:1.8;color:#666;margin:0 auto 26px;max-width:330px}
+.vpn-gate-button{width:100%;min-height:52px;border:1px solid #111;background:#111;color:#fff;padding:15px 18px;font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.vpn-gate-button:hover{background:#333}
+.vpn-gate-note{display:block;margin-top:15px;font-size:10px;line-height:1.6;color:#888}
+@media(max-width:480px){.vpn-gate{padding:16px}.vpn-gate-card{padding:32px 23px}}
+
 </style>
 <style>
 /* GOLD SHOP — premium black editorial sections */
@@ -2493,7 +2507,19 @@ html{scroll-padding-top:90px}
 .catalog .price-stack{display:flex;flex-direction:row;align-items:baseline;justify-content:flex-start;gap:9px;flex-wrap:wrap;padding:0;margin-top:2px}
 .catalog .price-current{font-size:clamp(17px,1.7vw,22px);font-weight:700;letter-spacing:-.035em;color:#111;order:0}
 .catalog .price-old{font-size:12px;color:#888;text-decoration:line-through;text-decoration-thickness:1px;order:1}
-.catalog .discount-pill{display:inline-flex;align-items:center;justify-content:center;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:10px;font-weight:700;letter-spacing:.04em;order:2}
+.catalog .discount-pill{display:inline-flex;align-items:center;justify-content:c
+
+<div class="vpn-gate" id="vpnGate" role="dialog" aria-modal="true" aria-labelledby="vpnGateTitle">
+ <div class="vpn-gate-card">
+  <div class="vpn-gate-mark" aria-hidden="true">↗</div>
+  <div class="vpn-gate-kicker">GOLD SHOP · ДОСТУП К МАГАЗИНУ</div>
+  <h1 id="vpnGateTitle">Перед входом включи VPN</h1>
+  <p>Для доступа к сайту GOLD SHOP сначала подключись к VPN. Когда VPN будет включён, нажми кнопку ниже, чтобы перейти в магазин.</p>
+  <button class="vpn-gate-button" id="vpnGateEnter" type="button">VPN включён — войти</button>
+  <span class="vpn-gate-note">Если сайт не загрузится, проверь подключение к VPN и обнови страницу.</span>
+ </div>
+</div>
+enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:10px;font-weight:700;letter-spacing:.04em;order:2}
 .catalog .product-sale-badge{position:absolute;z-index:4;left:12px;bottom:12px;padding:8px 10px;background:rgba(8,8,8,.88);border:1px solid rgba(255,255,255,.35);color:#fff;font:700 9px/1 Arial,Helvetica,sans-serif;letter-spacing:.13em;backdrop-filter:blur(8px)}
 .catalog .product-tag{top:12px;left:12px}
 .catalog .product-sale-badge + .favorite{z-index:5}
@@ -3537,6 +3563,17 @@ async function loadPublicTrust(){
 loadPublicTrust();
 
 loadProducts();
+
+// Экран-предупреждение о VPN перед входом в каталог
+const vpnGate = document.getElementById('vpnGate');
+const vpnGateEnter = document.getElementById('vpnGateEnter');
+if (vpnGate && vpnGateEnter) {
+ document.body.style.overflow = 'hidden';
+ vpnGateEnter.addEventListener('click', () => {
+  vpnGate.hidden = true;
+  document.body.style.overflow = '';
+ });
+}
 </script>
 </body>
 </html>
