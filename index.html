@@ -1261,6 +1261,9 @@ footer{
  letter-spacing:.12em;
  line-height:1.5;
 }
+.catalog .product-stock{margin-top:6px;font-size:8px;letter-spacing:.08em;color:#777}
+.catalog .product-stock.is-low{color:#a87945}
+.catalog .product-stock.is-out{color:#999}
 .catalog .price{
  color:#111!important;
  font-size:12px!important;
@@ -1926,11 +1929,11 @@ input::placeholder, textarea::placeholder{
  </div>
  <div class="puffer-editorial-grid">
   <figure class="puffer-editorial-card">
-   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в белом пуховике GOLD SHOP" loading="lazy">
    <figcaption>01 / WHITE PUFFER</figcaption>
   </figure>
   <figure class="puffer-editorial-card">
-   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модели в белых пуховиках GOLD SHOP" loading="lazy">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
    <figcaption>02 / BLACK PUFFER</figcaption>
   </figure>
  </div>
@@ -1990,7 +1993,7 @@ input::placeholder, textarea::placeholder{
   <div><div class="footer-logo">GOLD SHOP</div><p class="footer-note">Contemporary streetwear. Curated with attention to every detail.</p></div>
   <div><div class="kicker" style="color:#aaa">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Telegram</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать магазину ↗</a></div>
  </div>
- <div class="footer-bottom"><span>© GOLD SHOP · DEMO STORE</span><span>Designed for everyday expression</span></div>
+ <div class="footer-bottom"><span>© GOLD SHOP · CONTEMPORARY STREETWEAR</span><span>Designed for everyday expression</span></div>
 </footer>
 
 <div class="overlay" id="overlay"></div>
@@ -2118,7 +2121,8 @@ function normalizeProduct(product) {
  const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))&&!/\/CP%20COMPANY\/cp-company\.png(?:\?|$)/i.test(x)):[];
  const variants=Array.isArray(product.variants)?product.variants.map(v=>({color:String(v.color||''),images:imgs(v.images),sizes:Object.fromEntries(Object.entries(v.sizes||{}).map(([z,q])=>[z,Math.max(0,Number(q)||0)]))})):[],first=variants[0],images=imgs(product.images);
  const category=String(product.category||'').toLowerCase(),price=Number(product.price)||0,oldPrice=Number(product.old_price)||null;
- return {id:String(product.id),name:String(product.name||'Товар GOLD SHOP'),category,categoryLabel:CATEGORY_LABELS[category]||'GOLD SHOP',price,oldPrice,tag:oldPrice&&oldPrice>price?'Sale':'GOLD SHOP',description:String(product.description||''),variants,sizes:[...new Set(variants.flatMap(v=>Object.entries(v.sizes).filter(([,q])=>q>0).map(([z])=>z)))],images:first?.images?.length?first.images:(images.length?images:[PRODUCT_IMAGE_FALLBACK])};
+ const stockTotal=variants.reduce((sum,v)=>sum+Object.values(v.sizes).reduce((n,q)=>n+q,0),0);
+ return {id:String(product.id),name:String(product.name||'Товар GOLD SHOP'),category,categoryLabel:CATEGORY_LABELS[category]||'GOLD SHOP',price,oldPrice,stockTotal,tag:oldPrice&&oldPrice>price?'Sale':'GOLD SHOP',description:String(product.description||''),variants,sizes:[...new Set(variants.flatMap(v=>Object.entries(v.sizes).filter(([,q])=>q>0).map(([z])=>z)))],images:first?.images?.length?first.images:(images.length?images:[PRODUCT_IMAGE_FALLBACK])};
 }
 const TELEGRAM_USERNAME='go1d_sh0p';
 const money=n=>new Intl.NumberFormat('ru-RU').format(n)+' ₽';
@@ -2316,6 +2320,7 @@ function renderProducts(){
      <p class="product-name">${escapeHtml(p.name)}</p>
      <div class="product-meta">${escapeHtml(p.categoryLabel)}</div>
      ${p.sizes.length?'<div class="product-sizes">РАЗМЕРЫ · '+p.sizes.map(escapeHtml).join(' / ')+'</div>':''}
+     <div class="product-stock ${p.stockTotal===0?'is-out':p.stockTotal<=2?'is-low':''}">${p.stockTotal===0?'Нет в наличии':p.stockTotal<=2?'Осталось: '+p.stockTotal+' шт.':'В наличии'}</div>
     </div>
     ${priceMarkup(p)}
    </div>
