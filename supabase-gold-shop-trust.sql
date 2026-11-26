@@ -26,6 +26,20 @@ create index if not exists customer_reviews_public_idx
 
 alter table public.customer_reviews enable row level security;
 
+-- Public image bucket for customer review photos. Uploads are managed by the store owner.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'customer-review-photos',
+  'customer-review-photos',
+  true,
+  5242880,
+  array['image/jpeg', 'image/png', 'image/webp']
+)
+on conflict (id) do update
+set public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = array['image/jpeg', 'image/png', 'image/webp'];
+
 -- Reviews and order details are accessed only through the backend service role.
 revoke all on public.customer_reviews from anon, authenticated;
 
