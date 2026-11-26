@@ -329,6 +329,7 @@ app.get("/health", (_req, res) => {
 
 function verifyTelegramInitData(initData) {
   if (typeof initData !== "string" || !initData || !process.env.BOT_TOKEN) {
+    console.warn("Mini App auth rejected: missing initData or bot token.");
     return null;
   }
 
@@ -336,14 +337,20 @@ function verifyTelegramInitData(initData) {
   const receivedHash = params.get("hash");
   const authDate = Number(params.get("auth_date"));
 
-  if (!receivedHash || !Number.isFinite(authDate)) return null;
-  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 24) return null;
+  if (!receivedHash || !Number.isFinite(authDate)) {
+    console.warn("Mini App auth rejected: missing hash or invalid auth_date.");
+    return null;
+  }
+  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 24) {
+    console.warn("Mini App auth rejected: initData expired.");
+    return null;
+  }
 
   params.delete("hash");
   params.delete("signature");
+  params.sort();
 
   const dataCheckString = [...params.entries()]
-    .sort(([a], [b]) => a.localeCompare(b))
     .map(([key, value]) => `${key}=${value}`)
     .join("\n");
 
@@ -355,13 +362,20 @@ function verifyTelegramInitData(initData) {
     .update(dataCheckString)
     .digest("hex");
 
-  if (!safeEqual(receivedHash, expectedHash)) return null;
+  if (!safeEqual(receivedHash, expectedHash)) {
+    console.warn("Mini App auth rejected: Telegram initData hash mismatch.");
+    return null;
+  }
 
   try {
     const user = JSON.parse(params.get("user") || "{}");
-    if (!user.id || !adminIds.has(String(user.id))) return null;
+    if (!user.id || !adminIds.has(String(user.id))) {
+      console.warn("Mini App auth rejected: Telegram user is not in ADMIN_IDS.");
+      return null;
+    }
     return user;
   } catch {
+    console.warn("Mini App auth rejected: invalid Telegram user payload.");
     return null;
   }
 }
