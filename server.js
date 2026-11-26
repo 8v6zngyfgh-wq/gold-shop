@@ -4,7 +4,7 @@
 const express = require("express");
 const { Bot } = require("grammy");
 const { createClient } = require("@supabase/supabase-js");
-const { timingSafeEqual } = require("node:crypto");
+const { timingSafeEqual, createHmac } = require("node:crypto");
 
 const requiredEnv = ["BOT_TOKEN", "SUPABASE_URL", "SUPABASE_SECRET_KEY"];
 
@@ -27,8 +27,8 @@ app.use((req, res, next) => {
 
   if (origin && allowedOrigins.has(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Telegram-Init-Data");
   }
 
   if (req.method === "OPTIONS") {
@@ -312,6 +312,134 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "gold-shop-backend"
   });
+});
+
+// Telegram Mini App admin authentication
+
+function verifyTelegramInitData(initData) {
+  if (typeof initData !== "string" || !initData || !process.env.BOT_TOKEN) {
+    return null;
+  }
+
+  const params = new URLSearchParams(initData);
+  const receivedHash = params.get("hash");
+  const authDate = Number(params.get("auth_date"));
+
+  if (!receivedHash || !Number.isFinite(authDate)) return null;
+  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 24) return null;
+
+  params.delete("hash");
+  params.delete("signature");
+
+  const dataCheckString = [...params.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("\\n");
+
+  const secretKey = createHmac("sha256", "WebAppData")
+    .update(process.env.BOT_TOKEN)
+    .digest();
+
+  const expectedHash = createHmac("sha256", secretKey)
+    .update(dataCheckString)
+    .digest("hex");
+
+  if (!safeEqual(receivedHash, expectedHash)) return null;
+
+  try {
+    const user = JSON.parse(params.get("user") || "{}");
+    if (!user.id || !adminIds.has(String(user.id))) return null;
+    return user;
+  } catch {
+    return null;
+  }
+}
+
+function requireMiniAppAdmin(req, res, next) {
+  const user = verifyTelegramInitData(req.get("X-Telegram-Init-Data"));
+  if (!user) {
+    return res.status(401).json({ error: "Нет доступа. Открой панель из Telegram-бота." });
+  }
+  req.telegramAdmin = user;
+  next();
+}
+
+// Admin product management API
+
+app.get("/api/admin/products", requireMiniAppAdmin, async (_req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .select("id, name, price, old_price, category, description, images, sizes, variants, is_active, sort_order")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    res.json({ products: data || [] });
+  } catch (error) {
+    console.error("Admin products API error:", error);
+    res.status(500).json({ error: "Не удалось загрузить товары." });
+  }
+});
+
+app.patch("/api/admin/products/:id", requireMiniAppAdmin, async (req, res) => {
+  const productId = String(req.params.id || "");
+  if (!UUID_PATTERN.test(productId)) {
+    return res.status(400).json({ error: "Некорректный товар." });
+  }
+
+  const body = req.body || {};
+  const allowed = ["name", "price", "old_price", "category", "description", "images", "variants", "sizes", "is_active", "sort_order"];
+  const update = {};
+  for (const key of allowed) {
+    if (Object.prototype.hasOwnProperty.call(body, key)) update[key] = body[key];
+  }
+
+  if (!Object.keys(update).length) {
+    return res.status(400).json({ error: "Нет изменений для сохранения." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "name") &&
+      (typeof update.name !== "string" || update.name.trim().length < 2 || update.name.length > 120)) {
+    return res.status(400).json({ error: "Проверь название товара." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "price") &&
+      (!Number.isFinite(Number(update.price)) || Number(update.price) < 0)) {
+    return res.status(400).json({ error: "Некорректная цена." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "old_price") &&
+      update.old_price !== null &&
+      (!Number.isFinite(Number(update.old_price)) || Number(update.old_price) < 0)) {
+    return res.status(400).json({ error: "Некорректная старая цена." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "images") &&
+      (!Array.isArray(update.images) || update.images.some(url => typeof url !== "string" || !/^https:\\/\\//i.test(url)))) {
+    return res.status(400).json({ error: "Фотографии должны быть HTTPS-ссылками." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "variants") &&
+      !Array.isArray(update.variants)) {
+    return res.status(400).json({ error: "Некорректные варианты товара." });
+  }
+  if (Object.prototype.hasOwnProperty.call(update, "is_active") &&
+      typeof update.is_active !== "boolean") {
+    return res.status(400).json({ error: "Некорректный статус товара." });
+  }
+
+  if (typeof update.name === "string") update.name = update.name.trim();
+  if (Object.prototype.hasOwnProperty.call(update, "price")) update.price = Number(update.price);
+  if (Object.prototype.hasOwnProperty.call(update, "old_price") && update.old_price !== null) update.old_price = Number(update.old_price);
+
+  try {
+    const { data, error } = await supabase
+      .from("products")
+      .update(update)
+      .eq("id", productId)
+      .select("id, name, price, old_price, category, description, images, sizes, variants, is_active")
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Товар не найден." });
+    res.json({ ok: true, product: data });
+  } catch (error) {
+    console.error("Admin product update error:", error);
+    res.status(500).json({ error: "Не удалось сохранить товар." });
+  }
 });
 
 // Products API
