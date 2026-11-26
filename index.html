@@ -2095,6 +2095,58 @@ input::placeholder, textarea::placeholder{
 }
 @media(prefers-reduced-motion:reduce){.puffer-editorial-card img,.catalog .product-card{transition:none!important}}
 
+
+/* GOLD SHOP — complete responsive usability pass */
+@media(max-width:620px){
+ header{padding-top:env(safe-area-inset-top)}
+ .nav{height:62px;padding:0 4vw;grid-template-columns:auto 1fr auto;gap:8px}
+ .nav-left{gap:8px}
+ .nav-left>a:nth-child(2){display:none}
+ .menu-toggle{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px}
+ .nav .logo{font-size:20px!important;letter-spacing:.13em!important;white-space:nowrap}
+ .nav-right{gap:5px}
+ .nav-right>a,.nav-right>button{font-size:8px;letter-spacing:.08em;padding:8px 5px}
+ .section{padding-left:4.5vw;padding-right:4.5vw}
+ .catalog .filters{align-items:stretch;gap:12px}
+ .catalog .filter-list{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:2px 0 7px;margin-right:-4.5vw}
+ .catalog .filter-list::-webkit-scrollbar{display:none}
+ .catalog .filter{flex:0 0 auto;min-height:40px;padding:10px 13px}
+ .catalog .catalog-search{width:100%}
+ .catalog .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 9px}
+ .catalog .product-card{min-width:0}
+ .catalog .product-media{aspect-ratio:3/4}
+ .catalog .product-media img{object-fit:contain!important;padding:9%!important}
+ .catalog .quick-add{display:block!important;opacity:1!important;transform:none!important;min-height:38px}
+ .catalog .product-info{min-height:0!important;gap:6px}
+ .catalog .product-copy{min-width:0}
+ .catalog .product-name{overflow-wrap:anywhere}
+ .catalog .product-sizes,.catalog .product-stock{line-height:1.5}
+ .product-modal{grid-template-columns:1fr!important;max-height:94dvh}
+ .modal-gallery{min-height:0!important;height:min(43dvh,390px)}
+ .modal-gallery img{height:100%!important;padding:12px!important}
+ .modal-details{padding:28px 22px 24px!important}
+ .modal-details h2{font-size:32px!important}
+ .checkout{padding:25px 19px!important;max-height:94dvh;overflow:auto}
+ .checkout h2{font-size:34px!important}
+ .cart-items{padding-left:16px;padding-right:16px}
+ .cart-bottom{padding-left:16px;padding-right:16px}
+}
+@media(max-width:380px){
+ .nav .logo{font-size:17px!important}
+ .nav-right>a,.nav-right>button{font-size:7px}
+ .catalog .product-name{font-size:13px!important}
+ .catalog .product-info{padding-left:7px!important;padding-right:7px!important}
+}
+@media(hover:none){
+ .catalog .product-card:hover{transform:none!important}
+ .catalog .product-card:hover .product-media .front-image{transform:none!important;filter:none!important}
+ .catalog .quick-add{opacity:1!important;transform:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 
