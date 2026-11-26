@@ -347,7 +347,6 @@ function verifyTelegramInitData(initData) {
   }
 
   params.delete("hash");
-  params.delete("signature");
   params.sort();
 
   const dataCheckString = [...params.entries()]
