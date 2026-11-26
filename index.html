@@ -2725,7 +2725,7 @@ html{scroll-padding-top:90px}
   чтобы не размещать API-ключ непосредственно в браузере.
 */
 
-const DADATA_TOKEN = 'ВСТАВЬ_СЮДА_API_ТОКЕН_DADATA';
+const ADDRESS_SUGGEST_URL = 'https://gold-shop-api-gv5e.onrender.com/api/address/suggest';
 
 const PRODUCTS_API_URL = 'https://gold-shop-api-gv5e.onrender.com/api/products';
 const ORDERS_API_URL = 'https://gold-shop-api-gv5e.onrender.com/api/orders';
@@ -3207,14 +3207,10 @@ async function searchAddresses(query){
  }
  const requestId=++addressRequest;
  try{
-  const response=await fetch('https://suggestions.dadata.ru/suggestions/api/4_1/rs/suggest/address',{
+  const response=await fetch(ADDRESS_SUGGEST_URL,{
    method:'POST',
-   headers:{
-    'Content-Type':'application/json',
-    'Accept':'application/json',
-    'Authorization':'Token '+DADATA_TOKEN
-   },
-   body:JSON.stringify({query,count:8})
+   headers:{'Content-Type':'application/json','Accept':'application/json'},
+   body:JSON.stringify({query})
   });
   if(!response.ok)throw new Error('DaData request failed');
   const data=await response.json();
