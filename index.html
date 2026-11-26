@@ -2356,6 +2356,23 @@ input::placeholder, textarea::placeholder{
  .catalog .product-card,.promo-product-photo{transition:none!important}
 }
 
+
+/* GOLD SHOP — product detail interaction polish */
+.modal-gallery{position:relative}
+.modal-gallery .gallery-counter{position:absolute;right:25px;bottom:20px;z-index:5;padding:7px 10px;background:rgba(255,255,255,.88);color:#222;font-size:9px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
+.modal-gallery .gallery-dots{bottom:25px!important;left:25px!important;right:auto!important;justify-content:flex-start!important;gap:7px!important}
+.modal-gallery .gallery-dots button{width:18px!important;height:2px!important;border-radius:0!important;background:#aaa!important;transition:width .2s ease,background .2s ease}
+.modal-gallery .gallery-dots button.active{width:30px!important;background:#111!important}
+.modal-details .color-options,.modal-details .sizes{gap:9px}
+.modal-details .color-btn,.modal-details .size-btn{min-width:52px!important;min-height:46px!important;font-size:10px!important;transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease}
+.modal-details .color-btn:not(:disabled):active,.modal-details .size-btn:not(:disabled):active{transform:scale(.96)}
+.modal-details .color-btn:focus-visible,.modal-details .size-btn:focus-visible{outline:2px solid #b99a5b!important;outline-offset:3px}
+.variant-selection{margin-top:12px;padding:11px 12px;background:#f5f4f0;border:1px solid #e9e7e1;color:#555;font-size:10px;letter-spacing:.04em}
+.modal-details .variant-stock{font-size:10px!important;line-height:1.5}
+.modal-details .modal-add:disabled{background:#e7e6e2!important;color:#898989!important;border-color:#e7e6e2!important;opacity:1!important}
+.modal-details .modal-add:not(:disabled){box-shadow:0 8px 20px rgba(0,0,0,.12)}
+@media(max-width:760px){.modal-gallery .gallery-dots{bottom:18px!important;left:17px!important}.modal-gallery .gallery-counter{right:17px;bottom:13px;font-size:8px}.modal-details .color-btn,.modal-details .size-btn{min-width:48px!important;min-height:44px!important}.variant-selection{font-size:9px;padding:10px}}
+
 </style></head>
 
 <body>
@@ -2544,6 +2561,7 @@ input::placeholder, textarea::placeholder{
    <button class="gallery-arrow prev" id="galleryPrev" aria-label="Предыдущее фото">‹</button>
    <button class="gallery-arrow next" id="galleryNext" aria-label="Следующее фото">›</button>
    <div class="gallery-dots" id="galleryDots"></div>
+    <div class="gallery-counter" id="galleryCounter" aria-live="polite">01 / 01</div>
   </div>
   <div class="modal-details">
    <button class="close" id="productClose" aria-label="Закрыть">×</button>
@@ -2551,8 +2569,9 @@ input::placeholder, textarea::placeholder{
    <p class="modal-description" id="modalDescription"></p>
    <div class="variant-title">Выбери цвет</div><div class="color-options" id="colorOptions"></div>
    <div class="size-title"><span>Выбери размер</span><button class="size-help" id="sizeHelp">Таблица размеров</button></div>
-   <div class="sizes" id="sizeOptions"></div><div class="variant-stock" id="variantStock"></div>
-   <button class="btn modal-add" id="modalAdd">Добавить в корзину ↗</button>
+   <div class="sizes" id="sizeOptions"></div><div class="variant-stock" id="variantStock" aria-live="polite"></div>
+    <div class="variant-selection" id="variantSelection" aria-live="polite">Выбери цвет и размер</div>
+   <button class="btn modal-add" id="modalAdd" disabled>Выбери размер</button>
    <p class="modal-note">Нужна помощь с выбором размера или дополнительными фотографиями? Напиши нам в Telegram — поможем определиться.</p>
   </div>
  </div>
@@ -2925,9 +2944,9 @@ $('productGrid').addEventListener('keydown',e=>{
 function selectedVariant(){return activeProduct?.variants.find(v=>v.color===activeColor)||null}
 function variantImages(){const a=selectedVariant()?.images||[];return a.length?a:[PRODUCT_IMAGE_FALLBACK]}
 function openProduct(id){const p=productById(id);if(!p)return;activeProduct=p;activeColor=p.variants.find(v=>Object.values(v.sizes).some(q=>q>0))?.color||p.variants[0]?.color||'';activeSize='';activeImage=0;$('modalCategory').textContent=p.categoryLabel;$('modalName').textContent=p.name;$('modalPrice').innerHTML=modalPriceMarkup(p);$('modalDescription').textContent=p.description;renderColors();renderSizes();renderGallery();$('productModal').classList.add('open');document.body.style.overflow='hidden'}
-function renderColors(){$('colorOptions').innerHTML=(activeProduct?.variants||[]).map(v=>{const ok=Object.values(v.sizes).some(q=>q>0);return `<button class="color-btn ${v.color===activeColor?'selected':''}" data-color="${escapeAttr(v.color)}" ${ok?'':'disabled'}>${escapeHtml(v.color)}</button>`}).join('')}
-function renderSizes(){const entries=Object.entries(selectedVariant()?.sizes||{});if(!entries.some(([z,q])=>z===activeSize&&q>0))activeSize='';$('sizeOptions').innerHTML=entries.map(([z,q])=>`<button class="size-btn ${z===activeSize?'selected':''}" data-size="${escapeAttr(z)}" ${q>0?'':'disabled'}>${escapeHtml(z)}</button>`).join('');const total=entries.reduce((n,[,q])=>n+q,0);$('variantStock').textContent=total?`В наличии: ${total} шт.`:'Этот цвет закончился';$('modalAdd').disabled=!activeSize}
-function renderGallery(){const a=variantImages();activeImage=Math.min(activeImage,a.length-1);$('modalImage').src=a[activeImage];$('modalImage').alt=activeProduct.name+' — '+activeColor+' — фото '+(activeImage+1);$('galleryDots').innerHTML=a.map((_,i)=>`<button class="${i===activeImage?'active':''}" data-image="${i}" aria-label="Фото ${i+1}"></button>`).join('');$('galleryPrev').style.display=a.length>1?'block':'none';$('galleryNext').style.display=a.length>1?'block':'none'}
+function renderColors(){$('colorOptions').innerHTML=(activeProduct?.variants||[]).map(v=>{const ok=Object.values(v.sizes).some(q=>q>0);return `<button class="color-btn ${v.color===activeColor?'selected':''}" data-color="${escapeAttr(v.color)}" aria-pressed="${v.color===activeColor?'true':'false'}" ${ok?'':'disabled'}>${escapeHtml(v.color)}</button>`}).join('')}
+function renderSizes(){const entries=Object.entries(selectedVariant()?.sizes||{});if(!entries.some(([z,q])=>z===activeSize&&q>0))activeSize='';$('sizeOptions').innerHTML=entries.map(([z,q])=>`<button class="size-btn ${z===activeSize?'selected':''}" data-size="${escapeAttr(z)}" aria-pressed="${z===activeSize?'true':'false'}" ${q>0?'':'disabled'}>${escapeHtml(z)}</button>`).join('');const total=entries.reduce((n,[,q])=>n+q,0);const selectedQty=Number(selectedVariant()?.sizes?.[activeSize]||0);$('variantStock').textContent=total?(activeSize?`Размер ${activeSize}: в наличии ${selectedQty} шт.`:`В наличии: ${total} шт. · выбери размер`):'Этот цвет закончился';$('variantSelection').textContent=(activeColor?'Цвет: '+activeColor:'Цвет не выбран')+' · '+(activeSize?'Размер: '+activeSize:'размер не выбран');$('modalAdd').disabled=!activeSize||selectedQty<1;$('modalAdd').textContent=activeSize?'Добавить в корзину · '+activeSize:'Выбери размер'}
+function renderGallery(){const a=variantImages();activeImage=Math.min(activeImage,a.length-1);$('modalImage').src=a[activeImage];$('modalImage').alt=activeProduct.name+' — '+activeColor+' — фото '+(activeImage+1);$('galleryDots').innerHTML=a.map((_,i)=>`<button class="${i===activeImage?'active':''}" data-image="${i}" aria-label="Фото ${i+1}" aria-current="${i===activeImage?'true':'false'}"></button>`).join('');$('galleryCounter').textContent=String(activeImage+1).padStart(2,'0')+' / '+String(a.length).padStart(2,'0');$('galleryPrev').style.display=a.length>1?'block':'none';$('galleryNext').style.display=a.length>1?'block':'none'}
 function closeProduct(){
  $('productModal').classList.remove('open');
  document.body.style.overflow='';
