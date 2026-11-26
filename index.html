@@ -2416,10 +2416,16 @@ html{scroll-padding-top:90px}
 }
 @media(max-width:380px){.nav .nav-order-link{font-size:7px!important}.nav-right>button{font-size:7px!important}}
 
+.access-help{display:flex;align-items:center;justify-content:center;gap:8px;padding:9px 16px;background:#f1eee7;color:#39352e;text-align:center;font-size:11px;line-height:1.45;letter-spacing:.015em}
+.access-help span{font-size:14px;flex:0 0 auto}
+@media(max-width:520px){.access-help{font-size:10px;padding:8px 12px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}}
+
 </style></head>
 
 <body>
 <div class="announcement">Доставка по России · точную стоимость подтвердит менеджер до оплаты</div>
+<div class="access-help" role="note"><span aria-hidden="true">ⓘ</span> Если сайт не открывается или долго загружается, попробуй включить VPN и обновить страницу.</div>
 
 <header>
 <nav class="nav" aria-label="Главная навигация">
@@ -2844,7 +2850,7 @@ async function loadProducts(){
  }catch(error){
   console.error('Ошибка загрузки товаров:',error);
   $('productCountLabel').textContent='КАТАЛОГ НЕДОСТУПЕН';
-  grid.innerHTML='<div class="empty-state">Не удалось загрузить товары. Попробуй обновить страницу.</div>';
+  grid.innerHTML='<div class="empty-state">Не удалось загрузить товары. Проверь интернет-соединение, попробуй обновить страницу. Если сайт или каталог всё ещё недоступен, включи VPN и повтори попытку.</div>';
  }
 }
 
@@ -3419,7 +3425,7 @@ $('orderLookupForm').addEventListener('submit', async e => {
   const delivery=({cdek:'СДЭК',post:'Почта России',pickup:'Самовывоз',yandex:'Яндекс Доставка'})[o.delivery_method]||o.delivery_method||'Уточняется';
   box.innerHTML='<div class="order-status-head"><b>Информация о заказе</b><span class="order-status-pill">'+publicEsc(publicStatus[o.status]||o.status)+'</span></div>'+timeline+'<div class="order-info-grid"><div class="order-info-cell"><small>Номер заказа</small><b>'+publicEsc(o.id)+'</b></div><div class="order-info-cell"><small>Дата оформления</small><b>'+publicEsc(date)+'</b></div><div class="order-info-cell"><small>Город</small><b>'+publicEsc(o.city||'—')+'</b></div><div class="order-info-cell"><small>Доставка</small><b>'+publicEsc(delivery)+'</b></div><div class="order-info-cell"><small>Сумма товаров</small><b>'+new Intl.NumberFormat('ru-RU').format(Number(o.total)||0)+' ₽</b></div><div class="order-info-cell"><small>Получатель</small><b>'+publicEsc(o.customer_name||'—')+'</b></div></div><div class="order-items"><b>Состав заказа</b><br>'+(o.items||[]).map(i=>publicEsc(i.product_name)+' · '+publicEsc(i.selected_color||'')+' · '+publicEsc(i.selected_size||'')+' × '+publicEsc(i.quantity)).join('<br>')+'</div>'+(o.tracking_number?'<p>Трек-номер: <b>'+publicEsc(o.tracking_number)+'</b></p>':'')+(o.tracking_url?'<a class="text-link" target="_blank" rel="noopener" href="'+publicEsc(o.tracking_url)+'">Отследить посылку ↗</a>':'')+'<button class="btn order-copy-small" type="button" id="copyLookupOrder">Скопировать номер заказа</button>';
   const copyLookup=$('copyLookupOrder');copyLookup.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(o.id);copyLookup.textContent='Номер скопирован'}catch{copyLookup.textContent='Скопируй номер вручную: '+o.id}});
- }catch(error){box.textContent=error.message||'Не удалось проверить заказ.'}
+ }catch(error){box.textContent=(error.message||'Не удалось проверить заказ.')+' Проверь интернет-соединение; если сайт или сервис недоступен, попробуй включить VPN и повторить попытку.'}
 });
 $('closeOrderConfirmation').addEventListener('click',()=>$('orderConfirmation').classList.remove('open'));
 $('copyOrderId').addEventListener('click',async()=>{try{await navigator.clipboard.writeText($('confirmedOrderId').textContent);$('copyOrderId').textContent='Скопировано'}catch{$('copyOrderId').textContent='Выдели номер вручную'}});
