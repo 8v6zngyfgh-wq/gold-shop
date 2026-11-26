@@ -2597,11 +2597,11 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  </div>
  <div class="puffer-editorial-grid">
   <figure class="puffer-editorial-card">
-   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в белом пуховике GOLD SHOP" loading="lazy">
+   <img src="https://gold-shop-api-gv5e.onrender.com/api/image-proxy?url=https%3A%2F%2Fdbbvnflckimugbaxkfac.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproduct-images%2FB55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в белом пуховике GOLD SHOP" loading="lazy">
    <figcaption>01 / WHITE PUFFER</figcaption>
   </figure>
   <figure class="puffer-editorial-card">
-   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
+   <img src="https://gold-shop-api-gv5e.onrender.com/api/image-proxy?url=https%3A%2F%2Fdbbvnflckimugbaxkfac.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproduct-images%2F0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
    <figcaption>02 / BLACK PUFFER</figcaption>
   </figure>
  </div>
@@ -2855,7 +2855,7 @@ const PRODUCT_IMAGE_FALLBACK = '';
 let PRODUCTS = [];
 
 function normalizeProduct(product) {
- const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))&&!/\/CP%20COMPANY\/cp-company\.png(?:\?|$)/i.test(x)):[];
+ const imgs=a=>Array.isArray(a)?a.filter(x=>typeof x==='string'&&(x.startsWith('https://')||x.startsWith('http://'))&&!/\/CP%20COMPANY\/cp-company\.png(?:\?|$)/i.test(x)).map(imageSrc):[];
  const variants=Array.isArray(product.variants)?product.variants.map(v=>({color:String(v.color||''),images:imgs(v.images),sizes:Object.fromEntries(Object.entries(v.sizes||{}).map(([z,q])=>[z,Math.max(0,Number(q)||0)]))})):[],first=variants[0],images=imgs(product.images);
  const category=String(product.category||'').toLowerCase(),price=Number(product.price)||0,oldPrice=Number(product.old_price)||null;
  const stockTotal=variants.reduce((sum,v)=>sum+Object.values(v.sizes).reduce((n,q)=>n+q,0),0);
@@ -3530,6 +3530,15 @@ document.addEventListener('keydown',e=>{
 
 /* PUBLIC TRUST SECTIONS */
 const API_BASE = 'https://gold-shop-api-gv5e.onrender.com';
+function imageSrc(value){
+ try{
+  const url=new URL(String(value||''));
+  if(url.hostname==='dbbvnflckimugbaxkfac.supabase.co'&&url.pathname.startsWith('/storage/v1/object/public/')){
+   return API_BASE+'/api/image-proxy?url='+encodeURIComponent(url.toString());
+  }
+ }catch{}
+ return value;
+}
 const publicEsc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const publicStatus = {new:'Принят',confirmed:'Подтверждён',shipped:'Отправлен',completed:'Завершён',cancelled:'Отменён'};
 $('orderLookupForm').addEventListener('submit', async e => {
@@ -3558,7 +3567,7 @@ async function loadPublicTrust(){
   const shipBox=$('publicShipments');
   shipBox.innerHTML=shipmentsResponse.ok&&shipments.shipments?.length?shipments.shipments.map(x=>'<article><b>Заказ · '+publicEsc(x.code)+'</b><br>'+publicEsc(x.city)+' · '+publicEsc(({cdek:'СДЭК',post:'Почта России',pickup:'Самовывоз',yandex:'Яндекс Доставка'})[x.delivery_method]||x.delivery_method)+'<br>'+publicEsc(publicStatus[x.status]||x.status)+' · '+new Date(x.created_at).toLocaleDateString('ru-RU')+'<br>'+x.items.map(publicEsc).join(', ')+'</article>').join(''):'<p class="policy-copy">Пока нет отправок, которые покупатели разрешили показать публично. Новые подтверждённые отправления появятся здесь автоматически.</p>';
   const reviewBox=$('publicReviews');
-  reviewBox.innerHTML=reviewsResponse.ok&&reviews.reviews?.length?reviews.reviews.map(x=>'<article><b>'+publicEsc(x.display_name)+'</b><p>'+publicEsc(x.review_text)+'</p>'+(x.photo_urls||[]).map(url=>'<img loading="lazy" src="'+publicEsc(url)+'" alt="Фото товара от покупателя">').join('')+'</article>').join(''):'<p class="policy-copy">Пока нет опубликованных отзывов. Мы добавляем только отзывы реальных покупателей с их разрешения.</p>';
+  reviewBox.innerHTML=reviewsResponse.ok&&reviews.reviews?.length?reviews.reviews.map(x=>'<article><b>'+publicEsc(x.display_name)+'</b><p>'+publicEsc(x.review_text)+'</p>'+(x.photo_urls||[]).map(url=>'<img loading="lazy" src="'+publicEsc(imageSrc(url))+'" alt="Фото товара от покупателя">').join('')+'</article>').join(''):'<p class="policy-copy">Пока нет опубликованных отзывов. Мы добавляем только отзывы реальных покупателей с их разрешения.</p>';
  }catch{ $('publicShipments').textContent='История отправок временно недоступна.';$('publicReviews').textContent='Отзывы временно недоступны.'}
 }
 loadPublicTrust();
