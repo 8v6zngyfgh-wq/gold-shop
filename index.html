@@ -2373,6 +2373,41 @@ input::placeholder, textarea::placeholder{
 .modal-details .modal-add:not(:disabled){box-shadow:0 8px 20px rgba(0,0,0,.12)}
 @media(max-width:760px){.modal-gallery .gallery-dots{bottom:18px!important;left:17px!important}.modal-gallery .gallery-counter{right:17px;bottom:13px;font-size:8px}.modal-details .color-btn,.modal-details .size-btn{min-width:48px!important;min-height:44px!important}.variant-selection{font-size:9px;padding:10px}}
 
+
+/* GOLD SHOP — make order tracking a primary destination */
+html{scroll-padding-top:90px}
+#order-tracking{scroll-margin-top:88px}
+.order-tracking-section{padding-top:72px;padding-bottom:72px;background:#f3f3f0;color:#101010;border-top:1px solid #deded8;border-bottom:1px solid #deded8}
+.order-tracking-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1fr minmax(360px,.82fr);align-items:center;gap:7vw}
+.order-tracking-copy .kicker{color:#777}
+.order-tracking-copy h2{font-size:clamp(42px,5.8vw,76px);line-height:.98;margin:18px 0}
+.order-tracking-copy h2 span{color:#858585}
+.order-tracking-copy p{max-width:430px;color:#626262;font-size:14px;line-height:1.85}
+.order-tracking-form-wrap{padding:28px;background:#fff;border:1px solid #deded8;box-shadow:0 16px 48px rgba(0,0,0,.06)}
+.order-tracking-label{display:flex;align-items:center;gap:9px;font-size:9px;letter-spacing:.18em;font-weight:700;color:#555}
+.order-tracking-dot{width:7px;height:7px;border-radius:50%;background:#b28d4e;box-shadow:0 0 0 4px #b28d4e1c}
+.order-tracking-form-wrap .trust-form{grid-template-columns:1fr;margin:20px 0 10px}
+.order-tracking-form-wrap .trust-form label{display:grid;gap:8px;color:#555;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.order-tracking-form-wrap .trust-form input{min-height:48px;padding:14px;background:#fff;color:#111;border:1px solid #d8d8d3;border-radius:2px;font-size:13px;letter-spacing:normal;text-transform:none}
+.order-tracking-form-wrap .trust-form input::placeholder{color:#999}
+.order-tracking-form-wrap .trust-form button{grid-column:auto;width:100%;min-height:50px;background:#090909;color:#fff;border-color:#090909}
+.order-tracking-form-wrap .trust-form button:hover{background:#333;color:#fff}
+.order-tracking-hint{font-size:11px;line-height:1.6;color:#777}
+.order-tracking-form-wrap .trust-result{background:#111;color:#fff}
+.nav-order-link{white-space:nowrap}
+@media(max-width:900px){.order-tracking-inner{gap:4vw}.order-tracking-form-wrap{padding:22px}}
+@media(max-width:620px){
+ .order-tracking-section{padding:48px 5vw}
+ .order-tracking-inner{grid-template-columns:1fr;gap:22px}
+ .order-tracking-copy h2{font-size:48px;margin:12px 0}
+ .order-tracking-copy p{font-size:13px}
+ .order-tracking-form-wrap{padding:20px 16px}
+ .nav .nav-order-link{display:inline-flex!important;font-size:8px!important;letter-spacing:.04em!important;padding:8px 5px!important}
+ .nav-right{gap:3px!important}
+ .nav-right>button{font-size:8px!important}
+}
+@media(max-width:380px){.nav .nav-order-link{font-size:7px!important}.nav-right>button{font-size:7px!important}}
+
 </style></head>
 
 <body>
@@ -2386,6 +2421,7 @@ input::placeholder, textarea::placeholder{
  </div>
  <a class="logo" href="#">GOLD SHOP</a>
  <div class="nav-right">
+  <a class="nav-order-link" href="#order-tracking">Мой заказ</a>
   <a href="#catalog" id="favoritesLink">Избранное <span class="count" id="favCount">0</span></a>
   <button id="cartOpen" aria-label="Открыть корзину">Корзина <span class="count" id="cartCount">0</span></button>
  </div>
@@ -2402,6 +2438,26 @@ input::placeholder, textarea::placeholder{
   <a class="btn light" href="#catalog">Смотреть коллекцию <span>↗</span></a>
  </div>
 
+</section>
+
+<section class="section order-tracking-section" id="order-tracking">
+ <div class="order-tracking-inner">
+  <div class="order-tracking-copy">
+   <div class="kicker">GOLD SHOP / ORDER TRACKING</div>
+   <h2>Твой заказ.<br><span>Под контролем.</span></h2>
+   <p>Узнай статус покупки за пару секунд. Введи номер заказа и телефон, который указывал при оформлении.</p>
+  </div>
+  <div class="order-tracking-form-wrap">
+   <div class="order-tracking-label"><span class="order-tracking-dot"></span> ПРОВЕРКА СТАТУСА</div>
+   <form class="trust-form" id="orderLookupForm">
+    <label>Номер заказа<input id="lookupOrderId" required maxlength="36" placeholder="Вставь полный номер заказа" autocomplete="off"></label>
+    <label>Телефон<input id="lookupContact" required maxlength="100" placeholder="+7 ___ ___-__-__" autocomplete="tel"></label>
+    <button class="btn" type="submit">Проверить статус <span aria-hidden="true">↗</span></button>
+   </form>
+   <div class="order-tracking-hint">Номер заказа указан в сообщении после оформления покупки.</div>
+   <div class="trust-result" id="orderLookupResult" hidden></div>
+  </div>
+ </div>
 </section>
 
 <section class="puffer-editorial" aria-label="Хиты продаж — пуховики">
@@ -2503,13 +2559,6 @@ input::placeholder, textarea::placeholder{
   <article class="trust-card"><h3>Понятный заказ</h3><p>После оформления заявки покупатель получает номер заказа. По нему можно обратиться в поддержку и уточнить состояние покупки.</p></article>
   <article class="trust-card"><h3>Никаких выдуманных гарантий</h3><p>Мы стараемся заранее сообщать актуальную информацию о товаре, наличии, стоимости и способе отправки. Условия заказа согласовываются до оплаты.</p></article>
  </div>
- <div class="section-head" style="margin-top:65px"><div><div class="kicker">ORDER STATUS</div><h2>Проверить заказ.</h2><p class="policy-copy">Введи полный номер заказа и тот же номер телефона, который указал при оформлении.</p></div></div>
- <form class="trust-form" id="orderLookupForm">
-  <input id="lookupOrderId" required maxlength="36" placeholder="Полный номер заказа">
-  <input id="lookupContact" required maxlength="100" placeholder="Номер телефона из заказа">
-  <button class="btn" type="submit">Найти заказ ↗</button>
- </form>
- <div class="trust-result" id="orderLookupResult" hidden></div>
  <div class="section-head" style="margin-top:65px"><div><div class="kicker">REAL SHIPMENTS</div><h2>История отправок.</h2></div></div>
  <div class="trust-list" id="publicShipments"><p class="policy-copy">Загружаем подтверждённые отправки…</p></div>
  <div class="section-head" style="margin-top:65px"><div><div class="kicker">CUSTOMER STORIES</div><h2>Отзывы покупателей.</h2></div></div>
