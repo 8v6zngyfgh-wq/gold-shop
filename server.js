@@ -425,6 +425,8 @@ function requireMiniAppAdmin(req, res, next) {
   if (!user) {
     return res.status(401).json({ error: "Нет доступа. Открой панель из Telegram-бота." });
   }
+  res.set("Cache-Control", "no-store, private");
+  res.set("Pragma", "no-cache");
   req.telegramAdmin = user;
   next();
 }
