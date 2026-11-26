@@ -561,6 +561,101 @@ app.patch("/api/admin/orders/:id", requireMiniAppAdmin, async (req, res) => {
   }
 });
 
+// Admin analytics API
+app.get("/api/admin/analytics", requireMiniAppAdmin, async (req, res) => {
+  const requestedDays = Number(req.query.days || 30);
+  const days = [7, 30, 90].includes(requestedDays) ? requestedDays : 30;
+  try {
+    const now = new Date();
+    const from = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+    const { data: allOrders, error: ordersError } = await supabase
+      .from("orders")
+      .select("id, created_at, total, status")
+      .gte("created_at", from.toISOString())
+      .order("created_at", { ascending: true })
+      .limit(2000);
+    if (ordersError) throw ordersError;
+
+    const orders = allOrders || [];
+    const activeOrders = orders.filter(order => order.status !== "cancelled");
+    const orderValue = activeOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+    const averageOrder = activeOrders.length ? orderValue / activeOrders.length : 0;
+    const statusCounts = { new: 0, confirmed: 0, shipped: 0, completed: 0, cancelled: 0 };
+    for (const order of orders) {
+      if (Object.prototype.hasOwnProperty.call(statusCounts, order.status)) statusCounts[order.status]++;
+    }
+
+    const dailyMap = new Map();
+    for (let offset = days - 1; offset >= 0; offset--) {
+      const date = new Date(now.getTime() - offset * 24 * 60 * 60 * 1000);
+      const key = date.toISOString().slice(0, 10);
+      dailyMap.set(key, { date: key, orders: 0, amount: 0 });
+    }
+    for (const order of activeOrders) {
+      const key = new Date(order.created_at).toISOString().slice(0, 10);
+      const bucket = dailyMap.get(key);
+      if (bucket) {
+        bucket.orders++;
+        bucket.amount += Number(order.total || 0);
+      }
+    }
+
+    const orderIds = activeOrders.map(order => order.id);
+    let topProducts = [];
+    if (orderIds.length) {
+      const { data: items, error: itemsError } = await supabase
+        .from("order_items")
+        .select("order_id, product_name, quantity, unit_price")
+        .in("order_id", orderIds)
+        .limit(10000);
+      if (itemsError) throw itemsError;
+      const productMap = new Map();
+      for (const item of items || []) {
+        const name = item.product_name || "Товар";
+        const current = productMap.get(name) || { name, quantity: 0, amount: 0 };
+        current.quantity += Number(item.quantity || 0);
+        current.amount += Number(item.quantity || 0) * Number(item.unit_price || 0);
+        productMap.set(name, current);
+      }
+      topProducts = [...productMap.values()]
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 5);
+    }
+
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("variants, is_active")
+      .eq("is_active", true);
+    if (productsError) throw productsError;
+    let stockUnits = 0;
+    let lowStockProducts = 0;
+    let outOfStockProducts = 0;
+    for (const product of products || []) {
+      const count = (Array.isArray(product.variants) ? product.variants : [])
+        .reduce((sum, variant) => sum + Object.values(variant.sizes || {})
+          .reduce((subtotal, quantity) => subtotal + Math.max(0, Number(quantity) || 0), 0), 0);
+      stockUnits += count;
+      if (count === 0) outOfStockProducts++;
+      else if (count <= 2) lowStockProducts++;
+    }
+
+    res.json({
+      days,
+      ordersCount: orders.length,
+      activeOrdersCount: activeOrders.length,
+      orderValue,
+      averageOrder,
+      statuses: statusCounts,
+      daily: [...dailyMap.values()],
+      topProducts,
+      inventory: { stockUnits, lowStockProducts, outOfStockProducts }
+    });
+  } catch (error) {
+    console.error("Admin analytics API error:", error);
+    res.status(500).json({ error: "Не удалось загрузить статистику." });
+  }
+});
+
 // Products API
 
 app.get("/api/products", async (_req, res) => {
