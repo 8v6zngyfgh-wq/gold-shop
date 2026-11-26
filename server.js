@@ -421,7 +421,7 @@ app.patch("/api/admin/products/:id", requireMiniAppAdmin, async (req, res) => {
     return res.status(400).json({ error: "Некорректная старая цена." });
   }
   if (Object.prototype.hasOwnProperty.call(update, "images") &&
-      (!Array.isArray(update.images) || update.images.some(url => typeof url !== "string" || !/^https:\\/\\//i.test(url)))) {
+      (!Array.isArray(update.images) || update.images.some(url => typeof url !== "string" || !url.toLowerCase().startsWith("https://")))) {
     return res.status(400).json({ error: "Фотографии должны быть HTTPS-ссылками." });
   }
   if (Object.prototype.hasOwnProperty.call(update, "variants") &&
