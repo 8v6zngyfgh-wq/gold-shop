@@ -3142,6 +3142,7 @@ function renderProducts(){
 }
   const productGridForImages=$('productGrid');
  productGridForImages.addEventListener('pointerover',e=>{
+  if(e.pointerType==='touch')return;
   const card=e.target.closest('.product-card');
   if(!card||!productGridForImages.contains(card))return;
   const img=card.querySelector('.back-image');
