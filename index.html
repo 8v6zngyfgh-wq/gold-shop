@@ -2663,6 +2663,15 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
 
 /* GOLD SHOP — Telegram-native app shell (only inside an authenticated Mini App) */
 .tg-app-header,.tg-bottom-nav{display:none}
+/* Единая нижняя навигация на мобильном сайте и в Telegram Mini App */
+@media(max-width:760px){
+ html:not(.telegram-mini-app) body{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
+ html:not(.telegram-mini-app) .tg-bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;z-index:80;left:0;right:0;bottom:0;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(13,13,13,.97);border-top:1px solid #ffffff18;backdrop-filter:blur(20px)}
+ html:not(.telegram-mini-app) .tg-tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:49px;border:0;border-radius:10px;background:transparent;color:#858585;font-size:9px}
+ html:not(.telegram-mini-app) .tg-tab.active{color:#fff;background:#ffffff0d}
+ html:not(.telegram-mini-app) .tg-tab-icon{font:22px/1 var(--sans)}
+ html:not(.telegram-mini-app) .tg-tab i{position:absolute;top:4px;left:calc(50% + 9px);width:6px;height:6px;border-radius:50%;background:#fff}
+}
 .telegram-mini-app body{background:#080808;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
 .telegram-mini-app .announcement,
 .telegram-mini-app .access-help,
@@ -3059,7 +3068,7 @@ footer .footer-top a.footer-contact-link:hover{
 <footer>
  <div class="footer-top">
   <div><div class="footer-logo">GOLD SHOP</div><p class="footer-note">Современная одежда с вниманием к каждой детали.</p></div>
-  <div><div class="kicker" style="color:#aaa">Информация</div><p><a class="text-link" href="#trust">Отзывы и история отправок</a></p><p><a class="text-link" href="#delivery-terms">Доставка, оплата и возврат</a></p><p><a class="text-link" href="#help">Частые вопросы</a></p><div class="kicker" style="color:#aaa;margin-top:18px">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Телеграм</p><a class="text-link footer-contact-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener" aria-label="Открыть Telegram-канал GOLD SHOP">Открыть Telegram-магазин ↗</a></div>
+  <div><div class="kicker footer-info-label" style="color:#aaa">Информация</div><p><a class="text-link" href="#trust">Отзывы и история отправок</a></p><p><a class="text-link" href="#delivery-terms">Доставка, оплата и возврат</a></p><p><a class="text-link" href="#help">Частые вопросы</a></p><div class="kicker footer-contact-heading" style="color:#aaa;margin-top:18px">Связаться с нами</div><a class="text-link footer-contact-link" href="#manager-contact" aria-label="Связаться с менеджером">Связаться с менеджером ↗</a></div>
  </div>
  <div class="footer-bottom"><span>© GOLD SHOP · СОВРЕМЕННАЯ ОДЕЖДА</span><span>Создано для твоего повседневного стиля</span></div>
 </footer>
@@ -4027,15 +4036,15 @@ document.querySelectorAll('a.footer-contact-link').forEach(link=>{
  });
 });
 
-/* Telegram app navigation */
-if (isTelegramMiniApp) {
+/* Общая навигация сайта и Telegram Mini App */
+{
  const appTabs=[...document.querySelectorAll('[data-tg-tab]')];
  const setActiveTab=name=>appTabs.forEach(tab=>tab.classList.toggle('active',tab.dataset.tgTab===name));
- const goToCatalog=()=>{setActiveTab('catalog');$('catalog').scrollIntoView({behavior:'smooth',block:'start'});};
- document.querySelectorAll('[data-tg-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+ const goToCatalog=()=>{setActiveTab('catalog');showingFavorites=false;renderProducts();$('catalog').scrollIntoView({behavior:'smooth',block:'start'});};
+ appTabs.forEach(tab=>tab.addEventListener('click',()=>{
   const target=tab.dataset.tgTab;
-  telegramHaptic('light');
-  if(target==='catalog'){showingFavorites=false;renderProducts();goToCatalog();}
+  if(isTelegramMiniApp)telegramHaptic('light');
+  if(target==='catalog')goToCatalog();
   if(target==='favorites'){showFavorites();setActiveTab('favorites');}
   if(target==='cart'){openCart();setActiveTab('cart');}
   if(target==='orders'){setActiveTab('orders');$('order-tracking').scrollIntoView({behavior:'smooth',block:'start'});}
@@ -4043,9 +4052,10 @@ if (isTelegramMiniApp) {
  $('tgHeaderCart')?.addEventListener('click',()=>{openCart();setActiveTab('cart');});
  const syncAppCounts=()=>{
   const cartCount=cartQuantity(),favCount=favorites.size;
-  $('tgHeaderCartCount').textContent=cartCount;
-  $('tgCartDot').hidden=!cartCount;
-  $('tgFavDot').hidden=!favCount;
+  $('tgHeaderCartCount')?.replaceChildren(document.createTextNode(String(cartCount)));
+  const cartDot=$('tgCartDot'),favDot=$('tgFavDot');
+  if(cartDot)cartDot.hidden=!cartCount;
+  if(favDot)favDot.hidden=!favCount;
  };
  const originalUpdateCounts=updateCounts;
  updateCounts=function(){originalUpdateCounts();syncAppCounts();};
