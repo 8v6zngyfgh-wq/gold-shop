@@ -5,7 +5,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>GOLD SHOP — Одежда и streetwear</title>
 <meta name="description" content="GOLD SHOP — магазин современной streetwear-одежды. Выбирай товары, размеры и оформляй заказ онлайн. Доставка по России, точную стоимость подтвердит менеджер до оплаты.">
@@ -42,6 +42,7 @@
 <meta property="og:title" content="GOLD SHOP — Одежда и streetwear">
 <meta property="og:description" content="Современная streetwear-одежда. Каталог, размеры, оформление и отслеживание заказа.">
 <meta property="og:url" content="https://gold-shop-rnph.onrender.com/">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <style>
 :root{
@@ -2916,6 +2917,26 @@ const modalPriceMarkup=p=>p?.oldPrice>p?.price
  : money(p.price);
 
 const $=id=>document.getElementById(id);
+
+// Единая адаптация покупательского интерфейса для Telegram Mini App и обычного браузера.
+const telegramApp = window.Telegram?.WebApp || null;
+if (telegramApp) {
+ try {
+  telegramApp.ready();
+  telegramApp.expand();
+  telegramApp.setHeaderColor?.("#080808");
+  telegramApp.setBackgroundColor?.("#080808");
+  document.documentElement.classList.add("telegram-mini-app");
+ } catch (error) {
+  console.warn("Telegram Mini App initialization:", error);
+ }
+}
+function telegramHaptic(kind="light") {
+ try {
+  if (kind === "success") telegramApp?.HapticFeedback?.notificationOccurred("success");
+  else telegramApp?.HapticFeedback?.impactOccurred(kind);
+ } catch {}
+}
 const safeRead=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
 
 let cart=safeRead('goldShopCart',[]);
@@ -3051,6 +3072,34 @@ async function loadProducts(){
  }
 }
 
+// Вторые фотографии начинают загружаться заранее, пока карточка приближается к экрану.
+// Поэтому при наведении не появляется ожидание загрузки изображения.
+let hoverImageObserver = null;
+function preloadNearbyHoverImages(){
+ const images = document.querySelectorAll("#productGrid .back-image");
+ if (!images.length) return;
+ if (!("IntersectionObserver" in window)) {
+  images.forEach(img => { img.loading = "eager"; });
+  return;
+ }
+ if (!hoverImageObserver) {
+  hoverImageObserver = new IntersectionObserver((entries, observer) => {
+   entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    const img = entry.target;
+    img.loading = "eager";
+    if (typeof img.decode === "function") img.decode().catch(() => {});
+    observer.unobserve(img);
+   });
+  }, { rootMargin: "700px 0px", threshold: 0.01 });
+ }
+ images.forEach(img => {
+  if (img.dataset.preloadObserved) return;
+  img.dataset.preloadObserved = "1";
+  hoverImageObserver.observe(img);
+ });
+}
+
 function revealProductCards(){
  const cards=document.querySelectorAll('#productGrid .product-card');
  if(!cards.length)return;
@@ -3138,6 +3187,7 @@ function renderProducts(){
   </article>`).join('');
 
  revealProductCards();
+ preloadNearbyHoverImages();
 }
   function setFilter(filter){
  activeFilter=filter;
@@ -3190,6 +3240,7 @@ $('productGrid').addEventListener('click',e=>{
   e.stopPropagation();
   const id=fav.dataset.favorite;
   favorites.has(id)?favorites.delete(id):favorites.add(id);
+  telegramHaptic("light");
   saveFavorites();updateCounts();renderProducts();return;
  }
  const quick=e.target.closest('[data-quick]');
@@ -3243,7 +3294,7 @@ function addToCart(id,color,size){
  const found=cart.find(x=>x.id===id&&x.color===color&&x.size===size);
  if(found&&found.qty>=stock){toast('В наличии только '+stock+' шт.');return false}
  if(found)found.qty++;else cart.push({id,color,size,qty:1});
- saveCart();renderCart();updateCounts();toast('Товар добавлен в корзину');return true;
+ saveCart();renderCart();updateCounts();telegramHaptic("light");toast('Товар добавлен в корзину');return true;
 }
 
 function renderCart(){
@@ -3541,6 +3592,7 @@ $('checkoutForm').addEventListener('submit', async e => {
     }
 
     cart = [];
+    telegramHaptic("success");
     saveCart();
     renderCart();
     updateCounts();
