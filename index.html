@@ -2775,6 +2775,92 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
 .telegram-mini-app .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
 @media(max-width:370px){.telegram-mini-app .product-grid{gap:20px 8px}.telegram-mini-app .catalog{padding-left:11px!important;padding-right:11px!important}}
 
+
+
+/* GOLD SHOP — fixes for tracking fields, FAQ and footer contact */
+.order-tracking-form-wrap .trust-form input,
+.order-tracking-form-wrap .trust-form input:focus,
+.order-tracking-form-wrap .trust-form input:-webkit-autofill,
+.order-tracking-form-wrap .trust-form input:-webkit-autofill:hover,
+.order-tracking-form-wrap .trust-form input:-webkit-autofill:focus{
+ color:#111!important;
+ -webkit-text-fill-color:#111!important;
+ caret-color:#111!important;
+ opacity:1!important;
+ background:#fff!important;
+ text-shadow:none!important;
+}
+.order-tracking-form-wrap .trust-form input::placeholder{
+ color:#888!important;
+ -webkit-text-fill-color:#888!important;
+ opacity:1!important;
+}
+.order-tracking-form-wrap .trust-form label{color:#444!important}
+#help .faq-item{
+ background:#f5f5f3!important;
+ border:1px solid #deded9!important;
+ color:#111!important;
+ box-shadow:0 5px 18px rgba(0,0,0,.035);
+}
+#help .faq-item summary{
+ display:block;
+ color:#111!important;
+ font-weight:700;
+ opacity:1!important;
+}
+#help .faq-item summary:after{color:#555!important}
+#help .faq-item p{color:#555!important}
+#help .faq-item[open]{background:#fff!important;border-color:#bdbdb7!important}
+footer .footer-top .kicker{color:#aaa!important}
+footer .footer-top a.text-link{
+ display:inline-flex;
+ align-items:center;
+ min-height:40px;
+ padding:9px 12px;
+ border:1px solid #ffffff55!important;
+ border-radius:3px;
+ color:#fff!important;
+ background:#171717;
+ opacity:1!important;
+ text-decoration:none;
+ pointer-events:auto!important;
+ cursor:pointer;
+ transition:background .2s ease,color .2s ease,border-color .2s ease;
+}
+footer .footer-top a.text-link:hover,
+footer .footer-top a.text-link:focus-visible{
+ background:#fff!important;
+ color:#080808!important;
+ border-color:#fff!important;
+}
+footer .footer-top a.footer-contact-link{
+ min-height:48px;
+ padding:12px 17px;
+ background:#fff!important;
+ color:#080808!important;
+ border-color:#fff!important;
+ font-weight:700;
+}
+footer .footer-top a.footer-contact-link:hover{
+ background:#ddd!important;
+ color:#080808!important;
+}
+.telegram-mini-app .order-tracking-section .order-tracking-form-wrap{
+ background:#fff!important;
+ color:#111!important;
+}
+.telegram-mini-app #help .faq-item{
+ background:#f5f5f3!important;
+ border-color:#deded9!important;
+ color:#111!important;
+}
+.telegram-mini-app #help .faq-item summary,
+.telegram-mini-app #help .faq-item p{
+ color:#111!important;
+}
+.telegram-mini-app #help .faq-item p{color:#555!important}
+.telegram-mini-app footer .footer-top a.text-link{min-height:44px}
+
 </style><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 
@@ -2973,7 +3059,7 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
 <footer>
  <div class="footer-top">
   <div><div class="footer-logo">GOLD SHOP</div><p class="footer-note">Современная одежда с вниманием к каждой детали.</p></div>
-  <div><div class="kicker" style="color:#aaa">Информация</div><p><a class="text-link" href="#trust">Отзывы и история отправок</a></p><p><a class="text-link" href="#delivery-terms">Доставка, оплата и возврат</a></p><p><a class="text-link" href="#help">Частые вопросы</a></p><div class="kicker" style="color:#aaa;margin-top:18px">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Телеграм</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать магазину ↗</a></div>
+  <div><div class="kicker" style="color:#aaa">Информация</div><p><a class="text-link" href="#trust">Отзывы и история отправок</a></p><p><a class="text-link" href="#delivery-terms">Доставка, оплата и возврат</a></p><p><a class="text-link" href="#help">Частые вопросы</a></p><div class="kicker" style="color:#aaa;margin-top:18px">Связаться с нами</div><p style="font:22px var(--serif);margin:12px 0">Телеграм</p><a class="text-link footer-contact-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener" aria-label="Открыть Telegram-канал GOLD SHOP">Открыть Telegram-магазин ↗</a></div>
  </div>
  <div class="footer-bottom"><span>© GOLD SHOP · СОВРЕМЕННАЯ ОДЕЖДА</span><span>Создано для твоего повседневного стиля</span></div>
 </footer>
@@ -3929,6 +4015,17 @@ if (vpnGate && vpnGateEnter) {
   document.body.style.overflow = '';
  });
 }
+
+/* Открытие Telegram-ссылки из нижнего контакта в Mini App */
+document.querySelectorAll('a.footer-contact-link').forEach(link=>{
+ link.addEventListener('click',event=>{
+  const tg=window.Telegram?.WebApp;
+  if(isTelegramMiniApp&&typeof tg?.openTelegramLink==='function'){
+   event.preventDefault();
+   tg.openTelegramLink(link.href);
+  }
+ });
+});
 
 /* Telegram app navigation */
 if (isTelegramMiniApp) {
