@@ -3006,7 +3006,7 @@ const safeRead=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key)
 let cart=safeRead('goldShopCart',[]);
 let favorites=new Set(safeRead('goldShopFavorites',[]));
 let recentlyViewed=safeRead('goldShopRecentlyViewed',[]).filter(id=>typeof id==='string').slice(0,4);
-let activeFilter='all',activeProduct=null,activeColor='',activeSize='',activeImage=0;
+let activeFilter='all',showingFavorites=false,activeProduct=null,activeColor='',activeSize='',activeImage=0;
 let contactType='phone';
 let addressTimer=null;
 let addressRequest=0;
@@ -3204,6 +3204,7 @@ function renderProducts(){
  const sort=$('sortSelect').value;
  const query=$('productSearch').value.trim().toLocaleLowerCase('ru');
  let list=PRODUCTS.filter(p=>{
+  if(showingFavorites&&!favorites.has(p.id))return false;
   if(activeFilter!=='all'&&p.category!==activeFilter)return false;
   if(!query)return true;
   const searchable=[
@@ -3216,15 +3217,17 @@ function renderProducts(){
  if(sort==='low')list.sort((a,b)=>a.price-b.price);
  if(sort==='high')list.sort((a,b)=>b.price-a.price);
 
- $('productCountLabel').textContent=query?'НАЙДЕНО · '+list.length:' '+list.length+' ITEMS';
+ $('productCountLabel').textContent=showingFavorites?'ИЗБРАННОЕ · '+list.length:query?'НАЙДЕНО · '+list.length:' '+list.length+' ITEMS';
  $('searchClear').hidden=!query;
 
  const grid=$('productGrid');
 
  if(!list.length){
-  grid.innerHTML=query
-   ?'<div class="empty-state search-empty"><span class="search-empty-kicker">GOLD SHOP / SEARCH</span><strong>Ничего не найдено</strong><p>Попробуй другое название, категорию или размер.</p><button type="button" data-clear-search>Сбросить поиск ↗</button></div>'
-   :'<div class="empty-state">Пока здесь нет товаров.</div>';
+  grid.innerHTML=showingFavorites
+   ?'<div class="empty-state">В избранном пока пусто. Нажми ♡ на карточке товара, чтобы сохранить его здесь.</div>'
+   :query
+    ?'<div class="empty-state search-empty"><span class="search-empty-kicker">GOLD SHOP / SEARCH</span><strong>Ничего не найдено</strong><p>Попробуй другое название, категорию или размер.</p><button type="button" data-clear-search>Сбросить поиск ↗</button></div>'
+    :'<div class="empty-state">Пока здесь нет товаров.</div>';
   return;
  }
 
@@ -3254,6 +3257,7 @@ function renderProducts(){
  preloadNearbyHoverImages();
 }
   function setFilter(filter){
+ showingFavorites=false;
  activeFilter=filter;
  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
  renderProducts();
@@ -3274,20 +3278,11 @@ $('menuToggle').addEventListener('click',()=>$('catalog').scrollIntoView({behavi
 
 $('favoritesLink').addEventListener('click',e=>{
  e.preventDefault();
- const ids=[...favorites];
- if(!ids.length){toast('В избранном пока пусто');return}
- setFilter('all');
- $('productGrid').innerHTML=ids.map(id=>productById(id)).filter(Boolean).map(p=>`
-  <article class="product-card" data-open-product="${p.id}" tabindex="0">
-   <div class="product-media">
-    <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)}">
-    <div class="particle-layer" aria-hidden="true"></div>
-    ${p.oldPrice>p.price?'<span class="product-sale-badge">SALE · −'+discountPercent(p)+'%</span>':''}
-    <button class="favorite active" data-favorite="${p.id}">♥</button>
-    <button class="quick-add" data-quick="${p.id}">Выбрать размер</button>
-   </div>
-   <div class="product-info"><div><p class="product-name">${escapeHtml(p.name)}</p><div class="product-meta">${escapeHtml(p.categoryLabel)}</div></div>${priceMarkup(p)}</div>
-  </article>`).join('')||'<div class="empty-state">В избранном пока пусто.</div>';
+ if(!favorites.size){toast('В избранном пока пусто');return}
+ showingFavorites=true;
+ activeFilter='all';
+ document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));
+ renderProducts();
  $('catalog').scrollIntoView({behavior:'smooth'});
 });
 
