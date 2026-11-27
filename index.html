@@ -2535,6 +2535,43 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  .catalog .product-sale-badge{left:8px;bottom:8px;padding:7px 8px;font-size:8px}
 }
 
+
+/* GOLD SHOP — consistent product-card motion on desktop, mobile and Telegram WebView */
+.catalog .product-card.reveal-card{
+ opacity:0;
+ transform:none!important;
+ transition:opacity .32s ease,transform .28s ease,border-color .28s ease,box-shadow .28s ease!important;
+}
+.catalog .product-card.reveal-card.is-visible{
+ opacity:1;
+ transform:none!important;
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+ .catalog .product-card.is-visible:hover{
+  transform:translateY(-3px)!important;
+ }
+}
+@media (hover:none), (pointer:coarse){
+ .catalog .product-card,
+ .catalog .product-card:hover,
+ .catalog .product-card.is-visible:hover{
+  transform:none!important;
+ }
+ .catalog .product-card .quick-add{
+  opacity:1!important;
+  transform:none!important;
+ }
+}
+@media (prefers-reduced-motion:reduce){
+ .catalog .product-card,
+ .catalog .product-card.reveal-card,
+ .catalog .product-card.reveal-card.is-visible{
+  opacity:1!important;
+  transform:none!important;
+  transition:none!important;
+ }
+}
+
 </style><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 
@@ -2980,11 +3017,10 @@ async function loadProducts(){
 
 function revealProductCards(){
  const cards=document.querySelectorAll('#productGrid .product-card');
+ if(!cards.length)return;
 
- if(
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-  !('IntersectionObserver' in window)
- ){
+ const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduceMotion || !('IntersectionObserver' in window)){
   cards.forEach(card=>card.classList.add('is-visible'));
   return;
  }
@@ -2993,17 +3029,18 @@ function revealProductCards(){
   entries.forEach(entry=>{
    if(entry.isIntersecting){
     entry.target.classList.add('is-visible');
+    entry.target.style.transitionDelay='';
     obs.unobserve(entry.target);
    }
   });
  },{
-  threshold:0.1,
-  rootMargin:'0px 0px -20px 0px'
+  threshold:0.01,
+  rootMargin:'0px 0px 80px 0px'
  });
 
  cards.forEach((card,index)=>{
   card.classList.add('reveal-card');
-  card.style.transitionDelay=(index%4)*55+'ms';
+  card.style.transitionDelay=(index%4)*35+'ms';
   observer.observe(card);
  });
 }
