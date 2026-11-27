@@ -306,6 +306,7 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 }
 
 /* Переключение фотографий товара */
+.product-card:hover .product-media .back-image:not(.is-loaded){opacity:0!important}
 .product-card:hover .product-media .back-image{
  opacity:1;
  transform:scale(1);
@@ -2637,11 +2638,11 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  </div>
  <div class="puffer-editorial-grid">
   <figure class="puffer-editorial-card">
-   <img src="https://gold-shop-api-gv5e.onrender.com/api/image-proxy?url=https%3A%2F%2Fdbbvnflckimugbaxkfac.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproduct-images%2FB55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в белом пуховике GOLD SHOP" loading="lazy">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/B55A4A2A-3A48-4FDB-B3E2-F6D9CD5341AA.png" alt="Модель в белом пуховике GOLD SHOP" loading="lazy">
    <figcaption>01 / WHITE PUFFER</figcaption>
   </figure>
   <figure class="puffer-editorial-card">
-   <img src="https://gold-shop-api-gv5e.onrender.com/api/image-proxy?url=https%3A%2F%2Fdbbvnflckimugbaxkfac.supabase.co%2Fstorage%2Fv1%2Fobject%2Fpublic%2Fproduct-images%2F0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
+   <img src="https://dbbvnflckimugbaxkfac.supabase.co/storage/v1/object/public/product-images/0BEC2E10-0D54-4940-A9BE-ACC28212BA1D.png" alt="Модель в чёрном пуховике GOLD SHOP" loading="lazy">
    <figcaption>02 / BLACK PUFFER</figcaption>
   </figure>
  </div>
@@ -3118,9 +3119,9 @@ function renderProducts(){
  grid.innerHTML=list.map(p=>`
   <article class="product-card" data-open-product="${escapeAttr(p.id)}" tabindex="0" aria-label="Открыть ${escapeAttr(p.name)}">
    <div class="product-media">
-    <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy">
+    <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy" decoding="async">
     <div class="particle-layer" aria-hidden="true"></div>
-    <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
+    <img class="back-image" data-src="${p.images[1]&&p.images[1]!==p.images[0]?escapeAttr(p.images[1]):""}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy" decoding="async">
     ${p.tag&&p.tag!=='GOLD SHOP'?'<span class="product-tag">'+escapeHtml(p.tag)+'</span>':''}
     ${p.oldPrice>p.price?'<span class="product-sale-badge">SALE · −'+discountPercent(p)+'%</span>':''}
     <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
@@ -3139,7 +3140,17 @@ function renderProducts(){
 
  revealProductCards();
 }
-  function setFilter(filter){
+  const productGridForImages=$('productGrid');
+ productGridForImages.addEventListener('pointerover',e=>{
+  const card=e.target.closest('.product-card');
+  if(!card||!productGridForImages.contains(card))return;
+  const img=card.querySelector('.back-image');
+  if(!img||!img.dataset.src||img.dataset.loaded)return;
+  img.dataset.loaded='1';
+  img.addEventListener('load',()=>img.classList.add('is-loaded'),{once:true});
+  img.src=img.dataset.src;
+ });
+ function setFilter(filter){
  activeFilter=filter;
  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
  renderProducts();
