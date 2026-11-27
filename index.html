@@ -2576,6 +2576,47 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  }
 }
 
+
+/* GOLD SHOP trust area: contrast, readable cards and explicit external links */
+#trust .trust-card,
+#trust .trust-list,
+#trust .trust-list article{color:#f5f5f5!important}
+#trust .trust-card h3,
+#trust .trust-card p,
+#trust .trust-card .policy-copy,
+#trust .section-head h2,
+#trust .section-head .policy-copy,
+#trust .trust-list,
+#trust .trust-list article,
+#trust .trust-list article b,
+#trust .trust-list article p,
+#trust .trust-list .policy-copy{color:#f2f2f2!important}
+#trust .trust-card{background:linear-gradient(145deg,#191919,#101010)!important;border:1px solid #ffffff24!important;border-radius:16px!important;box-shadow:0 12px 30px #0003}
+#trust .trust-list{background:linear-gradient(145deg,#151515,#0c0c0c)!important;border:1px solid #ffffff24!important;border-radius:16px!important;padding:18px 22px!important}
+#trust .trust-list article{padding:19px 0!important;border-bottom:1px solid #ffffff1c!important;line-height:1.8}
+#trust .trust-list article:last-child{border-bottom:0!important}
+#trust .trust-list article b{font-size:14px;font-weight:800;letter-spacing:.015em}
+#trust .trust-list article p{margin:9px 0 0;color:#d6d6d6!important;font-size:14px;line-height:1.75}
+#trust .trust-list img{border-radius:10px;border:1px solid #ffffff25;object-fit:cover}
+#trust .trust-card .trust-cta-link,
+#trust .trust-heading-link{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:12px!important;min-height:48px!important;padding:0 18px!important;margin:12px 9px 0 0!important;border:1px solid #f1e5d2!important;border-radius:999px!important;background:#f1e5d2!important;color:#111!important;text-decoration:none!important;font:800 12px/1.2 Arial,Helvetica,sans-serif!important;letter-spacing:.035em!important;transition:background .2s ease,transform .2s ease,border-color .2s ease!important}
+#trust .trust-card .trust-cta-link:hover,
+#trust .trust-heading-link:hover{background:#fff!important;border-color:#fff!important;color:#080808!important;transform:translateY(-2px)}
+#trust .trust-card .trust-cta-secondary{background:transparent!important;color:#f4f4f4!important;border-color:#ffffff55!important}
+#trust .trust-card .trust-cta-secondary:hover{background:#fff!important;color:#111!important}
+#trust .trust-subsection-head{align-items:flex-end!important;gap:20px!important}
+#trust .trust-subsection-head>div{max-width:680px}
+#trust .trust-subsection-head .policy-copy{margin-top:12px;max-width:580px}
+#trust .trust-heading-link{margin:0 0 2px auto!important;white-space:nowrap}
+#trust .trust-list .policy-copy{color:#d7d7d7!important}
+@media(max-width:620px){
+ #trust .trust-list{padding:12px 15px!important}
+ #trust .trust-subsection-head{align-items:flex-start!important}
+ #trust .trust-heading-link{width:100%;margin:12px 0 0!important;white-space:normal}
+ #trust .trust-card .trust-cta-link{width:100%;margin:12px 0 0!important;min-height:50px!important}
+ #trust .trust-card .trust-cta-secondary{margin-top:9px!important}
+}
+
 </style><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 
@@ -2728,14 +2769,14 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  </div>
  <div class="section-head" style="margin-top:65px"><div><div class="kicker">WHY GOLD SHOP</div><h2>Открыто. Честно. Понятно.</h2><p class="policy-copy">Не просим верить на слово — даём возможность самостоятельно проверить отзывы, связаться с нами и следить за своим заказом.</p></div></div>
  <div class="trust-grid">
-  <article class="trust-card"><h3>Реальные отзывы</h3><p>Мы не придумываем отзывы и не выдаём рекламные тексты за мнения покупателей. Ты можешь самостоятельно посмотреть отзывы и сообщения в нашем Telegram-канале, а также открыть профили магазина на Авито.</p><a class="text-link" href="https://t.me/reviewsgoldsh0p" target="_blank" rel="noopener">Читать отзывы в Telegram ↗</a><br><a class="text-link" href="https://www.avito.ru/user/71517042f8f28c11fbb4e34e6bba7184/profile?src=sharing" target="_blank" rel="noopener">Проверить профиль Авито ↗</a></article>
-  <article class="trust-card"><h3>Мы на связи</h3><p>До и после оформления заказа можно связаться с GOLD SHOP напрямую в Telegram и уточнить наличие, детали товара, оплату или доставку.</p><a class="text-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Связаться с магазином ↗</a></article>
+  <article class="trust-card"><h3>Реальные отзывы</h3><p>Мы не придумываем отзывы и не выдаём рекламные тексты за мнения покупателей. Ты можешь самостоятельно посмотреть отзывы и сообщения в нашем Telegram-канале, а также открыть профили магазина на Авито.</p><a class="trust-cta-link" href="https://t.me/reviewsgoldsh0p" target="_blank" rel="noopener">Открыть отзывы в Telegram <span aria-hidden="true">↗</span></a><a class="trust-cta-link trust-cta-secondary" href="https://www.avito.ru/user/71517042f8f28c11fbb4e34e6bba7184/profile?src=sharing" target="_blank" rel="noopener">Проверить профиль Авито <span aria-hidden="true">↗</span></a></article>
+  <article class="trust-card"><h3>Мы на связи</h3><p>До и после оформления заказа можно связаться с GOLD SHOP напрямую в Telegram и уточнить наличие, детали товара, оплату или доставку.</p><a class="trust-cta-link" href="https://t.me/go1d_sh0p" target="_blank" rel="noopener">Написать в Telegram <span aria-hidden="true">↗</span></a></article>
   <article class="trust-card"><h3>Понятный заказ</h3><p>После оформления заявки покупатель получает номер заказа. По нему можно обратиться в поддержку и уточнить состояние покупки.</p></article>
   <article class="trust-card"><h3>Никаких выдуманных гарантий</h3><p>Мы стараемся заранее сообщать актуальную информацию о товаре, наличии, стоимости и способе отправки. Условия заказа согласовываются до оплаты.</p></article>
  </div>
  <div class="section-head" style="margin-top:65px"><div><div class="kicker">REAL SHIPMENTS</div><h2>История отправок.</h2></div></div>
  <div class="trust-list" id="publicShipments"><p class="policy-copy">Загружаем подтверждённые отправки…</p></div>
- <div class="section-head" style="margin-top:65px"><div><div class="kicker">CUSTOMER STORIES</div><h2>Отзывы покупателей.</h2></div></div>
+ <div class="section-head trust-subsection-head" style="margin-top:65px"><div><div class="kicker">CUSTOMER STORIES</div><h2>Отзывы покупателей.</h2><p class="policy-copy">Реальные отзывы и фотографии покупателей, опубликованные с их разрешения.</p></div><a class="trust-cta-link trust-heading-link" href="https://t.me/reviewsgoldsh0p" target="_blank" rel="noopener">Все отзывы в Telegram <span aria-hidden="true">↗</span></a></div>
  <div class="trust-list" id="publicReviews"><p class="policy-copy">Загружаем отзывы…</p></div>
 </section>
 
