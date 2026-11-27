@@ -2642,6 +2642,77 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  #delivery-terms .trust-card p{font-size:14px!important}
 }
 
+
+/* GOLD SHOP — Telegram-native app shell (only inside an authenticated Mini App) */
+.tg-app-header,.tg-bottom-nav{display:none}
+.telegram-mini-app body{background:#080808;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+.telegram-mini-app .announcement,
+.telegram-mini-app .access-help,
+.telegram-mini-app>body>header{display:none!important}
+.telegram-mini-app .tg-app-header{display:flex;position:sticky;top:0;z-index:30;min-height:66px;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(8,8,8,.96);border-bottom:1px solid rgba(255,255,255,.1);backdrop-filter:blur(18px)}
+.telegram-mini-app .tg-app-brand{display:flex;align-items:center;gap:11px;min-width:0}
+.telegram-mini-app .tg-app-monogram{width:37px;height:37px;display:grid;place-items:center;border:1px solid #ffffff55;border-radius:12px;font:22px Georgia,serif;color:#fff}
+.telegram-mini-app .tg-app-brand b{display:block;font:600 12px Arial,sans-serif;letter-spacing:.2em}
+.telegram-mini-app .tg-app-brand small{display:block;margin-top:4px;font:8px Arial,sans-serif;letter-spacing:.13em;color:#888}
+.telegram-mini-app .tg-app-header-cart{display:flex;align-items:center;gap:7px;min-height:38px;padding:0 11px;border:1px solid #ffffff24;border-radius:999px;background:#171717;color:#fff;font-size:10px}
+.telegram-mini-app .tg-app-header-cart b{display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:99px;background:#fff;color:#080808;font-size:9px}
+.telegram-mini-app .tg-bag-icon{font-size:18px;line-height:1}
+.telegram-mini-app main{padding-top:0}
+.telegram-mini-app .hero,
+.telegram-mini-app main>.section:not(.catalog):not(.order-tracking-section),
+.telegram-mini-app .puffer-editorial,
+.telegram-mini-app .editorial,
+.telegram-mini-app footer{display:none!important}
+.telegram-mini-app .catalog{padding:25px 15px 28px!important;min-height:calc(100dvh - 146px)}
+.telegram-mini-app .catalog-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:18px}
+.telegram-mini-app .catalog-intro h2{font:400 34px/1 Georgia,serif;letter-spacing:-.04em;margin:8px 0}
+.telegram-mini-app .catalog-intro p{font-size:11px;line-height:1.5;color:#999;margin:0}
+.telegram-mini-app .catalog-intro .kicker{font-size:8px}
+.telegram-mini-app .catalog-count{font-size:8px;letter-spacing:.1em;color:#888;white-space:nowrap}
+.telegram-mini-app .catalog-search{position:sticky;top:66px;z-index:15;margin:0 0 15px;border-radius:13px;background:#171717;border:1px solid #ffffff16}
+.telegram-mini-app .catalog-search input{min-height:46px;font-size:13px}
+.telegram-mini-app .filters{display:block;margin:0 0 17px}
+.telegram-mini-app .filter-list{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:7px;padding:2px 0 8px;scrollbar-width:none}
+.telegram-mini-app .filter-list::-webkit-scrollbar{display:none}
+.telegram-mini-app .filter{flex:0 0 auto;padding:10px 13px;border-radius:999px;font-size:9px;background:#151515;border-color:#ffffff20}
+.telegram-mini-app .filter.active{background:#fff;color:#080808}
+.telegram-mini-app .sort-select{display:block;width:100%;margin-top:5px;padding:11px 2px;background:#080808;font-size:11px}
+.telegram-mini-app .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 10px}
+.telegram-mini-app .product-media{border-radius:11px;background:#f7f7f7}
+.telegram-mini-app .product-media img{padding:8%}
+.telegram-mini-app .product-info{padding:10px 2px 0!important}
+.telegram-mini-app .product-name{font:400 15px Georgia,serif}
+.telegram-mini-app .product-meta{font-size:8px}
+.telegram-mini-app .catalog .price-current{font-size:17px}
+.telegram-mini-app .catalog .product-sale-badge{border-radius:5px}
+.telegram-mini-app .catalog .favorite{width:32px;height:32px;right:7px;top:7px}
+.telegram-mini-app .catalog .quick-add{left:7px;right:7px;bottom:7px;border-radius:8px;padding:11px 5px;font-size:8px}
+.telegram-mini-app .tg-bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;z-index:80;left:0;right:0;bottom:0;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:rgba(13,13,13,.97);border-top:1px solid #ffffff18;backdrop-filter:blur(20px)}
+.telegram-mini-app .tg-tab{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:49px;border:0;border-radius:10px;background:transparent;color:#858585;font-size:9px}
+.telegram-mini-app .tg-tab.active{color:#fff;background:#ffffff0d}
+.telegram-mini-app .tg-tab-icon{font:22px/1 Arial,sans-serif}
+.telegram-mini-app .tg-tab i{position:absolute;top:4px;left:calc(50% + 9px);width:6px;height:6px;border-radius:50%;background:#fff}
+.telegram-mini-app .order-tracking-section{display:block!important;padding:24px 15px 36px!important;min-height:calc(100dvh - 140px)}
+.telegram-mini-app .order-tracking-inner{display:block}
+.telegram-mini-app .order-tracking-copy h2{font-size:35px}
+.telegram-mini-app .order-tracking-form-wrap{margin-top:20px}
+.telegram-mini-app .order-tracking-form-wrap input{font-size:16px}
+.telegram-mini-app .recently-viewed{margin-top:35px}
+.telegram-mini-app .recently-viewed .section-head h2{font-size:27px}
+.telegram-mini-app .overlay{z-index:90}
+.telegram-mini-app .drawer{z-index:91;width:100%;border-radius:18px 18px 0 0;top:auto;bottom:0;height:min(88dvh,780px);transform:translateY(102%);border:1px solid #ffffff22}
+.telegram-mini-app .drawer.open{transform:translateY(0)}
+.telegram-mini-app .modal-wrap,.telegram-mini-app .checkout-wrap{z-index:100;padding:0;align-items:flex-end}
+.telegram-mini-app .product-modal{width:100%;max-height:94dvh;border-radius:20px 20px 0 0;grid-template-columns:1fr;overflow:auto}
+.telegram-mini-app .modal-gallery{min-height:42dvh;max-height:48dvh}
+.telegram-mini-app .modal-gallery img{max-height:48dvh}
+.telegram-mini-app .modal-details{padding:28px 22px 34px}
+.telegram-mini-app .modal-details h2{font-size:32px}
+.telegram-mini-app .checkout{width:100%;max-height:94dvh;border-radius:20px 20px 0 0;padding:26px 18px calc(22px + env(safe-area-inset-bottom))}
+.telegram-mini-app .order-confirmation{z-index:110}
+.telegram-mini-app .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+@media(max-width:370px){.telegram-mini-app .product-grid{gap:20px 8px}.telegram-mini-app .catalog{padding-left:11px!important;padding-right:11px!important}}
+
 </style><link rel="icon" type="image/svg+xml" href="/favicon.svg">
 </head>
 
@@ -2663,6 +2734,11 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
  </div>
 </nav>
 </header>
+
+<div class="tg-app-header" id="tgAppHeader" aria-label="GOLD SHOP">
+ <div class="tg-app-brand"><span class="tg-app-monogram">G</span><span><b>GOLD SHOP</b><small>STREETWEAR · CURATED SELECTION</small></span></div>
+ <button class="tg-app-header-cart" id="tgHeaderCart" type="button" aria-label="Открыть корзину"><span class="tg-bag-icon">▱</span><span>Корзина</span><b id="tgHeaderCartCount">0</b></button>
+</div>
 
 <main>
 <section class="hero">
@@ -2986,12 +3062,14 @@ const $=id=>document.getElementById(id);
 
 // Единая адаптация покупательского интерфейса для Telegram Mini App и обычного браузера.
 const telegramApp = window.Telegram?.WebApp || null;
-if (telegramApp) {
+const isTelegramMiniApp = Boolean(telegramApp && telegramApp.initData);
+if (isTelegramMiniApp) {
  try {
   telegramApp.ready();
   telegramApp.expand();
   telegramApp.setHeaderColor?.("#080808");
   telegramApp.setBackgroundColor?.("#080808");
+  telegramApp.setBottomBarColor?.("#080808");
   document.documentElement.classList.add("telegram-mini-app");
  } catch (error) {
   console.warn("Telegram Mini App initialization:", error);
@@ -3769,6 +3847,36 @@ if (vpnGate && vpnGateEnter) {
   document.body.style.overflow = '';
  });
 }
+
+/* Telegram app navigation */
+if (isTelegramMiniApp) {
+ const appTabs=[...document.querySelectorAll('[data-tg-tab]')];
+ const setActiveTab=name=>appTabs.forEach(tab=>tab.classList.toggle('active',tab.dataset.tgTab===name));
+ const goToCatalog=()=>{setActiveTab('catalog');$('catalog').scrollIntoView({behavior:'smooth',block:'start'});};
+ document.querySelectorAll('[data-tg-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+  const target=tab.dataset.tgTab;
+  telegramHaptic('light');
+  if(target==='catalog'){showingFavorites=false;renderProducts();goToCatalog();}
+  if(target==='favorites'){$('favoritesLink').click();setActiveTab('favorites');}
+  if(target==='cart'){openCart();setActiveTab('cart');}
+  if(target==='orders'){setActiveTab('orders');$('order-tracking').scrollIntoView({behavior:'smooth',block:'start'});}
+ }));
+ $('tgHeaderCart')?.addEventListener('click',()=>{openCart();setActiveTab('cart');});
+ const syncAppCounts=()=>{
+  const cartCount=cartQuantity(),favCount=favorites.size;
+  $('tgHeaderCartCount').textContent=cartCount;
+  $('tgCartDot').hidden=!cartCount;
+  $('tgFavDot').hidden=!favCount;
+ };
+ const originalUpdateCounts=updateCounts;
+ updateCounts=function(){originalUpdateCounts();syncAppCounts();};
+ syncAppCounts();
+ $('cartClose')?.addEventListener('click',()=>setActiveTab('catalog'));
+ $('overlay')?.addEventListener('click',()=>setActiveTab('catalog'));
+ $('checkoutOpen')?.addEventListener('click',()=>setActiveTab('cart'));
+ $('orderLookupForm')?.addEventListener('submit',()=>setActiveTab('orders'));
+}
+
 </script>
 </body>
 </html>
