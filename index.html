@@ -319,6 +319,8 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 
 /* На телефонах не используем hover */
 @media(hover:none){
+ .product-card .quick-add{opacity:1;transform:none;}
+ .product-card:hover .quick-add{opacity:1;transform:none;}
  .product-card:hover .product-media .back-image{
   opacity:0;
   transform:scale(1.04);
@@ -3502,10 +3504,6 @@ function chooseAddress(value){
  clearError('addressError');
 }
 async function searchAddresses(query){
- if(!DADATA_TOKEN||DADATA_TOKEN==='ВСТАВЬ_СЮДА_API_ТОКЕН_DADATA'){
-  closeAddressSuggestions();
-  return;
- }
  const requestId=++addressRequest;
  try{
   const response=await fetch(ADDRESS_SUGGEST_URL,{
@@ -3513,7 +3511,7 @@ async function searchAddresses(query){
    headers:{'Content-Type':'application/json','Accept':'application/json'},
    body:JSON.stringify({query})
   });
-  if(!response.ok)throw new Error('DaData request failed');
+  if(!response.ok)throw new Error('Address suggestions unavailable');
   const data=await response.json();
   if(requestId!==addressRequest)return;
   const suggestions=data.suggestions||[];
@@ -3534,7 +3532,7 @@ $('customerAddress').addEventListener('input',()=>{
  const value=$('customerAddress').value.trim();
  clearError('addressError');
  clearTimeout(addressTimer);
- if(value.length<3){closeAddressSuggestions();return}
+ if(value.length<3){addressRequest++;closeAddressSuggestions();return}
  addressTimer=setTimeout(()=>searchAddresses(value),350);
 });
 $('addressSuggestions').addEventListener('click',e=>{
