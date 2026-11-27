@@ -321,10 +321,10 @@ bot.command("track", async (ctx) => {
     return;
   }
 
-  const [orderId, ...contactParts] = String(ctx.match || "").trim().split(/\\s+/);
+  const [orderId, ...contactParts] = String(ctx.match || "").trim().split(/\s+/);
   const contact = contactParts.join("").trim();
   if (!UUID_PATTERN.test(orderId || "") || contact.length < 5 || contact.length > 100) {
-    await ctx.reply("Формат команды:\\n/track НОМЕР_ЗАКАЗА ТЕЛЕФОН_ИЛИ_TELEGRAM\\n\\nИспользуй номер и контакт, которые указал при оформлении.");
+    await ctx.reply("Формат команды:\n/track НОМЕР_ЗАКАЗА ТЕЛЕФОН_ИЛИ_TELEGRAM\n\nИспользуй номер и контакт, которые указал при оформлении.");
     return;
   }
 
@@ -336,10 +336,10 @@ bot.command("track", async (ctx) => {
 
     const normalize = value => String(value || "").trim().replace(/^@/, "").toLowerCase();
     const supplied = order?.contact_method === "phone"
-      ? contact.replace(/\\D/g, "")
+      ? contact.replace(/\D/g, "")
       : normalize(contact);
     const stored = order?.contact_method === "phone"
-      ? String(order?.phone || "").replace(/\\D/g, "")
+      ? String(order?.phone || "").replace(/\D/g, "")
       : normalize(order?.phone);
 
     if (!order || !supplied || supplied !== stored) {
@@ -356,7 +356,7 @@ bot.command("track", async (ctx) => {
       order.tracking_number ? "Трек-номер: " + order.tracking_number : "Трек-номер пока не добавлен."
     ];
     if (order.tracking_url) lines.push("Отслеживание: " + order.tracking_url);
-    await ctx.reply(lines.join("\\n"), { link_preview_options: { is_disabled: true } });
+    await ctx.reply(lines.join("\n"), { link_preview_options: { is_disabled: true } });
   } catch (error) {
     console.error("Telegram order tracking error:", error);
     await ctx.reply("Не удалось проверить заказ. Попробуй позже.");
