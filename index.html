@@ -3172,16 +3172,17 @@ function applyHomepageImages(){
  const usable=PRODUCTS.filter(p=>p.images&&p.images.length&&p.images[0]);
  if(!usable.length)return;
  const outerwear=usable.find(p=>p.category==='outerwear')||usable[0];
- const fresh=usable.find(p=>p.category==='hoodies')||usable.find(p=>p.id!==outerwear.id)||usable[0];
- const jeans=usable.find(p=>p.category==='jeans')||fresh;
+ const blackGalleryJeans=usable.find(p=>p.category==='jeans'&&/gallery\\s*dept/i.test(p.name)&&p.variants?.some(v=>/ч[её]рн|black/i.test(v.color)))
+  ||usable.find(p=>p.category==='jeans'&&p.variants?.some(v=>/ч[её]рн|black/i.test(v.color)))
+  ||usable.find(p=>p.category==='jeans'&&/gallery\\s*dept/i.test(p.name))
+  ||usable.find(p=>p.category==='jeans');
  const setImage=(selector,product)=>{
   const img=document.querySelector(selector);
   if(img&&product?.images?.[0])img.src=product.images[0];
  };
  setImage('.promo-visual-one .promo-product-photo',outerwear);
- setImage('.promo-visual-two .promo-product-photo',fresh);
+ setImage('.promo-visual-two .promo-product-photo',blackGalleryJeans);
 }
-
 const PRODUCTS_CACHE_KEY='goldShopProductsCacheV1';
 
 function displayProducts(payload,{fresh=false}={}){
