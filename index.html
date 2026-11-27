@@ -2973,56 +2973,81 @@ function applyHomepageImages(){
  setImage('.promo-visual-two .promo-product-photo',fresh);
 }
 
-async function loadProducts(){
- const grid=$('productGrid');
- $('productCountLabel').textContent='ЗАГРУЗКА…';
- grid.innerHTML='<div class="empty-state">Загружаем каталог GOLD SHOP…</div>';
+const PRODUCTS_CACHE_KEY='goldShopProductsCacheV1';
 
- try{
-  const response=await fetch(PRODUCTS_API_URL,{
-   method:'GET',
-   headers:{'Accept':'application/json'}
-  });
+function displayProducts(payload,{fresh=false}={}){
+ if(!payload||!Array.isArray(payload.products))throw new Error('Некорректный ответ каталога');
+ PRODUCTS=payload.products.map(normalizeProduct);
+ applyHomepageImages();
 
-  if(!response.ok){
-   throw new Error('Ошибка сервера: '+response.status);
-  }
+ activeFilter='all';
+ document.querySelectorAll('.filter').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
 
-  const payload=await response.json();
-
-  if(!payload||!Array.isArray(payload.products)){
-   throw new Error('Некорректный ответ каталога');
-  }
-
-  PRODUCTS=payload.products.map(normalizeProduct);
-  applyHomepageImages();
-
-  // При загрузке всегда открываем полный каталог, а не случайно выбранную категорию.
-  activeFilter='all';
-  document.querySelectorAll('.filter').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
-
+ if(fresh){
   cart=cart.filter(item=>productById(item.id)).map(item=>({
    ...item,
    qty:Math.min(Math.max(1,Math.floor(Number(item.qty)||1)),availableStock(item.id,item.color,item.size))
   })).filter(item=>item.qty>0);
   favorites=new Set([...favorites].filter(id=>productById(id)));
-
   saveCart();
   saveFavorites();
+ }
 
-  renderProducts();
-  renderRecentlyViewed();
-  renderCart();
-  updateCounts();
+ renderProducts();
+ renderRecentlyViewed();
+ renderCart();
+ updateCounts();
 
-  if(!PRODUCTS.length){
-   $('productCountLabel').textContent='0 ITEMS';
-   grid.innerHTML='<div class="empty-state">Каталог скоро пополнится. Загляни чуть позже.</div>';
+ if(!PRODUCTS.length){
+  $('productCountLabel').textContent='0 ITEMS';
+  $('productGrid').innerHTML='<div class="empty-state">Каталог скоро пополнится. Загляни чуть позже.</div>';
+ }
+}
+
+async function loadProducts(){
+ const grid=$('productGrid');
+ const cached=safeRead(PRODUCTS_CACHE_KEY,null);
+ let hasCache=Boolean(cached&&Array.isArray(cached.products));
+
+ if(hasCache){
+  try{
+   displayProducts(cached,{fresh:false});
+   $('productCountLabel').textContent=PRODUCTS.length+' ITEMS · ОБНОВЛЯЕМ';
+  }catch(error){
+   console.warn('Не удалось показать сохранённый каталог:',error);
+   hasCache=false;
+   PRODUCTS=[];
   }
+ }else{
+  $('productCountLabel').textContent='ЗАГРУЗКА…';
+  grid.innerHTML='<div class="empty-state">Загружаем каталог GOLD SHOP…</div>';
+ }
+
+ try{
+  const response=await fetch(PRODUCTS_API_URL,{
+   method:'GET',
+   headers:{'Accept':'application/json'},
+   cache:'no-store'
+  });
+  if(!response.ok)throw new Error('Ошибка сервера: '+response.status);
+  const payload=await response.json();
+  if(!payload||!Array.isArray(payload.products))throw new Error('Некорректный ответ каталога');
+
+  try{localStorage.setItem(PRODUCTS_CACHE_KEY,JSON.stringify(payload))}catch(cacheError){console.warn('Не удалось сохранить каталог:',cacheError)}
+  displayProducts(payload,{fresh:true});
  }catch(error){
   console.error('Ошибка загрузки товаров:',error);
-  $('productCountLabel').textContent='КАТАЛОГ НЕДОСТУПЕН';
-  grid.innerHTML='<div class="empty-state">Не удалось загрузить товары. Проверь интернет-соединение, попробуй обновить страницу. Если сайт или каталог всё ещё недоступен, включи VPN и повтори попытку.</div>';
+  if(hasCache){
+   $('productCountLabel').textContent=PRODUCTS.length+' ITEMS · СОХРАНЁННЫЙ КАТАЛОГ';
+   const note=document.createElement('div');
+   note.className='empty-state';
+   note.textContent='Показаны сохранённые товары. Актуальные цены и остатки могут обновиться после восстановления соединения.';
+   note.style.gridColumn='1 / -1';
+   grid.prepend(note);
+  }else{
+   $('productCountLabel').textContent='КАТАЛОГ НЕДОСТУПЕН';
+   grid.innerHTML='<div class="empty-state">Не удалось загрузить товары. Проверь интернет-соединение и попробуй обновить страницу. Если каталог не открывается, повтори попытку позже.</div>';
+  }
  }
 }
 
@@ -3584,8 +3609,8 @@ const API_BASE = 'https://gold-shop-api-gv5e.onrender.com';
 function imageSrc(value){
  try{
   const url=new URL(String(value||''));
-  if(url.hostname==='dbbvnflckimugbaxkfac.supabase.co'&&url.pathname.startsWith('/storage/v1/object/public/')){
-   return API_BASE+'/api/image-proxy?url='+encodeURIComponent(url.toString());
+  if(url.protocol==='https:'&&url.hostname==='dbbvnflckimugbaxkfac.supabase.co'&&url.pathname.startsWith('/storage/v1/object/public/')){
+   return url.toString();
   }
  }catch{}
  return value;
