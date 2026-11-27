@@ -397,15 +397,33 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 .favorite.active{
  color:#fff;
  background:#242424;
- box-shadow:0 0 16px #ffffff35;
- animation:favoritePop .35s ease;
+ border-color:#fff9;
+ box-shadow:0 0 18px #ffffff30;
 }
-
-@keyframes favoritePop{
- 0%{transform:scale(1)}
- 45%{transform:scale(1.3)}
- 75%{transform:scale(.92)}
- 100%{transform:scale(1)}
+.favorite .favorite-glyph{display:inline-block;line-height:1;transform-origin:center}
+.favorite.favorite-burst .favorite-glyph{animation:favoriteHeartIn .48s cubic-bezier(.18,.85,.25,1.35)}
+.favorite.favorite-burst::after{
+ content:"";
+ position:absolute;
+ inset:-5px;
+ border:1px solid #fff;
+ border-radius:50%;
+ pointer-events:none;
+ animation:favoriteRing .48s ease-out forwards;
+}
+@keyframes favoriteHeartIn{
+ 0%{transform:scale(.45) rotate(-18deg);opacity:.45}
+ 48%{transform:scale(1.38) rotate(8deg);opacity:1}
+ 72%{transform:scale(.88) rotate(-3deg)}
+ 100%{transform:scale(1) rotate(0)}
+}
+@keyframes favoriteRing{
+ 0%{transform:scale(.72);opacity:.75}
+ 100%{transform:scale(1.55);opacity:0}
+}
+.favorite:active{transform:scale(.94)}
+@media(prefers-reduced-motion:reduce){
+ .favorite.favorite-burst .favorite-glyph,.favorite.favorite-burst::after{animation:none}
 }
 
 .quick-add{
@@ -3364,7 +3382,7 @@ function renderProducts(){
     <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
     ${p.tag&&p.tag!=='GOLD SHOP'?'<span class="product-tag">'+escapeHtml(p.tag)+'</span>':''}
     ${p.oldPrice>p.price?'<span class="product-sale-badge">СКИДКА · −'+discountPercent(p)+'%</span>':''}
-    <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
+    <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="${favorites.has(p.id)?'Убрать из избранного':'Добавить в избранное'}"><span class="favorite-glyph" aria-hidden="true">${favorites.has(p.id)?'♥':'♡'}</span></button>
     <button class="quick-add" data-quick="${escapeAttr(p.id)}">Выбрать размер</button>
    </div>
    <div class="product-info">
@@ -3401,14 +3419,16 @@ $('sortSelect').addEventListener('change',renderProducts);
 document.querySelectorAll('[data-promo-filter]').forEach(a=>a.addEventListener('click',()=>setFilter(a.dataset.promoFilter)));
 $('menuToggle').addEventListener('click',()=>$('catalog').scrollIntoView({behavior:'smooth'}));
 
-$('favoritesLink').addEventListener('click',e=>{
- e.preventDefault();
- if(!favorites.size){toast('В избранном пока пусто');return}
+function showFavorites(){
  showingFavorites=true;
  activeFilter='all';
  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter==='all'));
  renderProducts();
- $('catalog').scrollIntoView({behavior:'smooth'});
+ $('catalog').scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('favoritesLink').addEventListener('click',e=>{
+ e.preventDefault();
+ showFavorites();
 });
 
 $('productGrid').addEventListener('click',e=>{
@@ -3423,9 +3443,20 @@ $('productGrid').addEventListener('click',e=>{
  if(fav){
   e.stopPropagation();
   const id=fav.dataset.favorite;
-  favorites.has(id)?favorites.delete(id):favorites.add(id);
-  telegramHaptic("light");
-  saveFavorites();updateCounts();renderProducts();return;
+  const adding=!favorites.has(id);
+  if(adding)favorites.add(id);else favorites.delete(id);
+  fav.classList.toggle('active',adding);
+  fav.classList.remove('favorite-burst');
+  fav.querySelector('.favorite-glyph').textContent=adding?'♥':'♡';
+  fav.setAttribute('aria-label',adding?'Убрать из избранного':'Добавить в избранное');
+  void fav.offsetWidth;
+  fav.classList.add('favorite-burst');
+  fav.addEventListener('animationend',()=>fav.classList.remove('favorite-burst'),{once:true});
+  telegramHaptic(adding?'success':'light');
+  saveFavorites();updateCounts();
+  if(showingFavorites&&!adding)setTimeout(()=>renderProducts(),260);
+  toast(adding?'Добавлено в избранное':'Удалено из избранного');
+  return;
  }
  const quick=e.target.closest('[data-quick]');
  if(quick){e.stopPropagation();openProduct(quick.dataset.quick);return}
@@ -3902,7 +3933,7 @@ if (isTelegramMiniApp) {
   const target=tab.dataset.tgTab;
   telegramHaptic('light');
   if(target==='catalog'){showingFavorites=false;renderProducts();goToCatalog();}
-  if(target==='favorites'){$('favoritesLink').click();setActiveTab('favorites');}
+  if(target==='favorites'){showFavorites();setActiveTab('favorites');}
   if(target==='cart'){openCart();setActiveTab('cart');}
   if(target==='orders'){setActiveTab('orders');$('order-tracking').scrollIntoView({behavior:'smooth',block:'start'});}
  }));
@@ -3923,5 +3954,13 @@ if (isTelegramMiniApp) {
 }
 
 </script>
+
+<nav class="tg-bottom-nav" aria-label="Навигация приложения">
+ <button class="tg-tab active" type="button" data-tg-tab="catalog"><span class="tg-tab-icon" aria-hidden="true">⌕</span><span>Каталог</span></button>
+ <button class="tg-tab" type="button" data-tg-tab="favorites"><span class="tg-tab-icon" aria-hidden="true">♡</span><span>Избранное</span><i id="tgFavDot" hidden></i></button>
+ <button class="tg-tab" type="button" data-tg-tab="cart"><span class="tg-tab-icon" aria-hidden="true">▱</span><span>Корзина</span><i id="tgCartDot" hidden></i></button>
+ <button class="tg-tab" type="button" data-tg-tab="orders"><span class="tg-tab-icon" aria-hidden="true">⌁</span><span>Мои заказы</span></button>
+</nav>
+
 </body>
 </html>
