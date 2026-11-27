@@ -66,7 +66,7 @@ app.use((req, res, next) => {
   if (origin && allowedOrigins.has(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Telegram-Init-Data");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Telegram-Init-Data, X-GOLD-Admin-Session");
   }
 
   if (req.method === "OPTIONS") {
@@ -125,8 +125,8 @@ app.get("/api/image-proxy", rateLimit({ windowMs: 60_000, max: 180, scope: "imag
       return res.sendStatus(upstream.status === 404 ? 404 : 502);
     }
 
-    const contentType = upstream.headers.get("content-type") || "";
-    if (!contentType.toLowerCase().startsWith("image/")) {
+    const contentType = (upstream.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+    if (!["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"].includes(contentType)) {
       return res.status(502).json({ error: "Источник вернул файл, который не является изображением." });
     }
 
@@ -147,6 +147,8 @@ app.get("/api/image-proxy", rateLimit({ windowMs: 60_000, max: 180, scope: "imag
     return res.status(502).json({ error: "Не удалось загрузить фотографию." });
   }
 });
+
+const adminSessions = new Map();
 
 const adminIds = new Set(
   (process.env.ADMIN_IDS || "")
@@ -311,6 +313,54 @@ bot.command("delivery", async (ctx) => {
     "<b>ДОСТАВКА И ОПЛАТА</b>\\n\\nДоступные способы доставки отображаются при оформлении заказа. Стоимость и сроки менеджер подтвердит отдельно.\\n\\nОнлайн-оплата пока не подключена. Не переводи деньги до подтверждения заказа и итоговой суммы менеджером.",
     { parse_mode: "HTML", reply_markup: shopKeyboard }
   );
+});
+
+bot.command("track", async (ctx) => {
+  if (ctx.chat?.type !== "private") {
+    await ctx.reply("Для безопасности проверь заказ в личном чате с ботом.");
+    return;
+  }
+
+  const [orderId, ...contactParts] = String(ctx.match || "").trim().split(/\\s+/);
+  const contact = contactParts.join("").trim();
+  if (!UUID_PATTERN.test(orderId || "") || contact.length < 5 || contact.length > 100) {
+    await ctx.reply("Формат команды:\\n/track НОМЕР_ЗАКАЗА ТЕЛЕФОН_ИЛИ_TELEGRAM\\n\\nИспользуй номер и контакт, которые указал при оформлении.");
+    return;
+  }
+
+  try {
+    const { data: order, error } = await supabase.from("orders")
+      .select("id, phone, contact_method, status, tracking_number, tracking_url, created_at")
+      .eq("id", orderId).maybeSingle();
+    if (error) throw error;
+
+    const normalize = value => String(value || "").trim().replace(/^@/, "").toLowerCase();
+    const supplied = order?.contact_method === "phone"
+      ? contact.replace(/\\D/g, "")
+      : normalize(contact);
+    const stored = order?.contact_method === "phone"
+      ? String(order?.phone || "").replace(/\\D/g, "")
+      : normalize(order?.phone);
+
+    if (!order || !supplied || supplied !== stored) {
+      await ctx.reply("Заказ не найден. Проверь номер и контакт.");
+      return;
+    }
+
+    const labels = { new: "Принят", confirmed: "Подтверждён", shipped: "Отправлен", completed: "Завершён", cancelled: "Отменён" };
+    const lines = [
+      "GOLD SHOP · СТАТУС ЗАКАЗА",
+      "",
+      "Заказ: " + order.id,
+      "Статус: " + (labels[order.status] || order.status),
+      order.tracking_number ? "Трек-номер: " + order.tracking_number : "Трек-номер пока не добавлен."
+    ];
+    if (order.tracking_url) lines.push("Отслеживание: " + order.tracking_url);
+    await ctx.reply(lines.join("\\n"), { link_preview_options: { is_disabled: true } });
+  } catch (error) {
+    console.error("Telegram order tracking error:", error);
+    await ctx.reply("Не удалось проверить заказ. Попробуй позже.");
+  }
 });
 
 bot.command("channel", async (ctx) => {
@@ -487,7 +537,8 @@ function verifyTelegramInitData(initData) {
     console.warn("Mini App auth rejected: missing hash or invalid auth_date.");
     return null;
   }
-  if (Math.abs(Date.now() / 1000 - authDate) > 60 * 60 * 6) {
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (authDate > nowSeconds + 30 || nowSeconds - authDate > 5 * 60) {
     console.warn("Mini App auth rejected: initData expired.");
     return null;
   }
@@ -525,14 +576,38 @@ function verifyTelegramInitData(initData) {
   }
 }
 
-function requireMiniAppAdmin(req, res, next) {
+app.post("/api/admin/session", rateLimit({ windowMs: 60_000, max: 10, scope: "admin-session" }), (req, res) => {
   const user = verifyTelegramInitData(req.get("X-Telegram-Init-Data"));
   if (!user) {
-    return res.status(401).json({ error: "Нет доступа. Открой панель из Telegram-бота." });
+    return res.status(401).json({ error: "Сессия Telegram устарела. Закрой и заново открой админ-панель через бота." });
+  }
+
+  const token = randomUUID() + randomUUID();
+  const expiresAt = Date.now() + 30 * 60 * 1000;
+  adminSessions.set(token, { user, expiresAt });
+
+  if (adminSessions.size > 1000) {
+    const now = Date.now();
+    for (const [key, session] of adminSessions) {
+      if (session.expiresAt <= now) adminSessions.delete(key);
+    }
+  }
+
+  res.set("Cache-Control", "no-store, private");
+  res.set("Pragma", "no-cache");
+  return res.json({ token, expires_at: new Date(expiresAt).toISOString() });
+});
+
+function requireMiniAppAdmin(req, res, next) {
+  const token = req.get("X-GOLD-Admin-Session");
+  const session = typeof token === "string" ? adminSessions.get(token) : null;
+  if (!session || session.expiresAt <= Date.now() || !adminIds.has(String(session.user?.id))) {
+    if (token) adminSessions.delete(token);
+    return res.status(401).json({ error: "Сессия администратора истекла. Закрой и заново открой админ-панель через бота." });
   }
   res.set("Cache-Control", "no-store, private");
   res.set("Pragma", "no-cache");
-  req.telegramAdmin = user;
+  req.telegramAdmin = session.user;
   next();
 }
 
@@ -914,7 +989,7 @@ app.get("/api/admin/analytics", requireMiniAppAdmin, async (req, res) => {
 
 // Products API
 
-app.get("/api/products", async (_req, res) => {
+app.get("/api/products", rateLimit({ windowMs: 60_000, max: 120, scope: "products" }), async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from("products")
@@ -926,6 +1001,7 @@ app.get("/api/products", async (_req, res) => {
 
     if (error) throw error;
 
+    res.set("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
     res.json({
       products: data || []
     });
@@ -939,7 +1015,7 @@ app.get("/api/products", async (_req, res) => {
 });
 
 // Public trust, shipment history and order tracking
-app.get("/api/public/shipments", async (_req, res) => {
+app.get("/api/public/shipments", rateLimit({ windowMs: 60_000, max: 30, scope: "public-shipments" }), async (_req, res) => {
   try {
     const { data: orders, error } = await supabase.from("orders")
       .select("id, city, delivery_method, status, tracking_number, tracking_url, created_at")
@@ -972,7 +1048,7 @@ app.get("/api/public/shipments", async (_req, res) => {
   }
 });
 
-app.get("/api/public/reviews", async (_req, res) => {
+app.get("/api/public/reviews", rateLimit({ windowMs: 60_000, max: 30, scope: "public-reviews" }), async (_req, res) => {
   try {
     const { data, error } = await supabase.from("customer_reviews")
       .select("id, display_name, review_text, photo_urls, created_at")
@@ -1387,6 +1463,7 @@ const server = app.listen(port, "0.0.0.0", async () => {
       { command: "shop", description: "Открыть каталог магазина" },
       { command: "help", description: "Помощь и ответы на вопросы" },
       { command: "delivery", description: "Доставка и оплата" },
+      { command: "track", description: "Проверить статус заказа" },
       { command: "channel", description: "Наш Telegram-канал" }
     ]);
     console.log("Telegram shop menu button and commands configured.");
