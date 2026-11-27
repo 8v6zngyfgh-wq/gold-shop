@@ -3070,6 +3070,12 @@ enter;background:#a52b35;color:#fff;border-radius:2px;padding:4px 7px;font-size:
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<nav class="tg-bottom-nav" aria-label="Навигация приложения">
+ <button class="tg-tab active" type="button" data-tg-tab="catalog"><span class="tg-tab-icon" aria-hidden="true">⌕</span><span>Каталог</span></button>
+ <button class="tg-tab" type="button" data-tg-tab="favorites"><span class="tg-tab-icon" aria-hidden="true">♡</span><span>Избранное</span><i id="tgFavDot" hidden></i></button>
+ <button class="tg-tab" type="button" data-tg-tab="cart"><span class="tg-tab-icon" aria-hidden="true">▱</span><span>Корзина</span><i id="tgCartDot" hidden></i></button>
+ <button class="tg-tab" type="button" data-tg-tab="orders"><span class="tg-tab-icon" aria-hidden="true">⌁</span><span>Мои заказы</span></button>
+</nav>
 <script>
 'use strict';
 
@@ -3955,12 +3961,7 @@ if (isTelegramMiniApp) {
 
 </script>
 
-<nav class="tg-bottom-nav" aria-label="Навигация приложения">
- <button class="tg-tab active" type="button" data-tg-tab="catalog"><span class="tg-tab-icon" aria-hidden="true">⌕</span><span>Каталог</span></button>
- <button class="tg-tab" type="button" data-tg-tab="favorites"><span class="tg-tab-icon" aria-hidden="true">♡</span><span>Избранное</span><i id="tgFavDot" hidden></i></button>
- <button class="tg-tab" type="button" data-tg-tab="cart"><span class="tg-tab-icon" aria-hidden="true">▱</span><span>Корзина</span><i id="tgCartDot" hidden></i></button>
- <button class="tg-tab" type="button" data-tg-tab="orders"><span class="tg-tab-icon" aria-hidden="true">⌁</span><span>Мои заказы</span></button>
-</nav>
+
 
 </body>
 </html>
