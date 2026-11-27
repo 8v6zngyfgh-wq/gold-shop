@@ -306,7 +306,6 @@ h2{font-family:var(--serif);font-size:clamp(36px,5vw,66px);font-weight:400;lette
 }
 
 /* Переключение фотографий товара */
-.product-card:hover .product-media .back-image:not(.is-loaded){opacity:0!important}
 .product-card:hover .product-media .back-image{
  opacity:1;
  transform:scale(1);
@@ -3119,9 +3118,9 @@ function renderProducts(){
  grid.innerHTML=list.map(p=>`
   <article class="product-card" data-open-product="${escapeAttr(p.id)}" tabindex="0" aria-label="Открыть ${escapeAttr(p.name)}">
    <div class="product-media">
-    <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy" decoding="async">
+    <img class="front-image" src="${escapeAttr(p.images[0])}" alt="${escapeAttr(p.name)} — фото 1" loading="lazy">
     <div class="particle-layer" aria-hidden="true"></div>
-    <img class="back-image" data-src="${p.images[1]&&p.images[1]!==p.images[0]?escapeAttr(p.images[1]):""}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy" decoding="async">
+    <img class="back-image" src="${escapeAttr(p.images[1]||p.images[0])}" alt="${escapeAttr(p.name)} — фото 2" loading="lazy">
     ${p.tag&&p.tag!=='GOLD SHOP'?'<span class="product-tag">'+escapeHtml(p.tag)+'</span>':''}
     ${p.oldPrice>p.price?'<span class="product-sale-badge">SALE · −'+discountPercent(p)+'%</span>':''}
     <button class="favorite ${favorites.has(p.id)?'active':''}" data-favorite="${escapeAttr(p.id)}" aria-label="Добавить в избранное">${favorites.has(p.id)?'♥':'♡'}</button>
@@ -3140,18 +3139,7 @@ function renderProducts(){
 
  revealProductCards();
 }
-  const productGridForImages=$('productGrid');
- productGridForImages.addEventListener('pointerover',e=>{
-  if(e.pointerType==='touch')return;
-  const card=e.target.closest('.product-card');
-  if(!card||!productGridForImages.contains(card))return;
-  const img=card.querySelector('.back-image');
-  if(!img||!img.dataset.src||img.dataset.loaded)return;
-  img.dataset.loaded='1';
-  img.addEventListener('load',()=>img.classList.add('is-loaded'),{once:true});
-  img.src=img.dataset.src;
- });
- function setFilter(filter){
+  function setFilter(filter){
  activeFilter=filter;
  document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
  renderProducts();
