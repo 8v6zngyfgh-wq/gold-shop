@@ -2924,7 +2924,7 @@ footer .footer-top a.footer-contact-link:hover{
     <button class="btn" type="submit">Проверить статус <span aria-hidden="true">↗</span></button>
    </form>
    <div class="order-tracking-hint">Номер заказа указан в сообщении после оформления покупки.</div>
-   <div class="trust-result" id="orderLookupResult" hidden></div>
+   <div class="trust-result" id="orderLookupResult" role="status" aria-live="polite" aria-atomic="true" hidden></div>
   </div>
  </div>
 </section>
@@ -2964,7 +2964,7 @@ footer .footer-top a.footer-contact-link:hover{
 <section class="section catalog" id="catalog">
 <div class="catalog-intro">
  <div><div class="kicker">GOLD SHOP / КОЛЛЕКЦИЯ</div><h2>Новая подборка<span>.</span></h2><p>Подборка современной одежды — выбери свою вещь</p></div>
- <div class="catalog-count" id="productCountLabel">GOLD SHOP</div>
+ <div class="catalog-count" id="productCountLabel" aria-live="polite" aria-atomic="true">GOLD SHOP</div>
 </div>
  <div class="catalog-search" role="search">
   <span class="catalog-search-icon" aria-hidden="true"></span>
@@ -2972,12 +2972,12 @@ footer .footer-top a.footer-contact-link:hover{
   <button class="catalog-search-clear" id="searchClear" type="button" aria-label="Очистить поиск" hidden>×</button>
  </div>
  <div class="filters">
-  <div class="filter-list" id="filterList">
-   <button class="filter active" data-filter="all">Все вещи</button>
-   <button class="filter" data-filter="outerwear">Верхняя одежда</button>
-   <button class="filter" data-filter="jeans">Джинсы</button>
-   <button class="filter" data-filter="hoodies">Худи</button>
-   <button class="filter" data-filter="vests">Жилеты</button>
+  <div class="filter-list" id="filterList" role="group" aria-label="Фильтр товаров по категории">
+   <button class="filter active" data-filter="all" type="button" aria-pressed="true">Все вещи</button>
+   <button class="filter" data-filter="outerwear" type="button" aria-pressed="false">Верхняя одежда</button>
+   <button class="filter" data-filter="jeans" type="button" aria-pressed="false">Джинсы</button>
+   <button class="filter" data-filter="hoodies" type="button" aria-pressed="false">Худи</button>
+   <button class="filter" data-filter="vests" type="button" aria-pressed="false">Жилеты</button>
   </div>
   <select class="sort-select" id="sortSelect" aria-label="Сортировка">
    <option value="default">Сортировка: по умолчанию</option>
@@ -3503,7 +3503,7 @@ function renderProducts(){
   function setFilter(filter){
  showingFavorites=false;
  activeFilter=filter;
- document.querySelectorAll('.filter').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));
+ document.querySelectorAll('.filter').forEach(b=>{const selected=b.dataset.filter===filter;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected))});
  renderProducts();
 }
 $('filterList').addEventListener('click',e=>{
