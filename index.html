@@ -3075,8 +3075,8 @@ footer .footer-top a.footer-contact-link:hover{
 
 <div class="overlay" id="overlay"></div>
 
-<aside class="drawer" id="cartDrawer" aria-label="Корзина">
- <div class="drawer-head"><h3>Твоя корзина</h3><button class="close" id="cartClose" aria-label="Закрыть">×</button></div>
+<aside class="drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartDrawerTitle" aria-label="Корзина" tabindex="-1">
+ <div class="drawer-head"><h3 id="cartDrawerTitle">Твоя корзина</h3><button class="close" id="cartClose" aria-label="Закрыть">×</button></div>
  <div class="cart-items" id="cartItems"></div>
  <div class="cart-bottom">
   <div class="total-line"><span>Итого</span><strong id="cartTotal">0 ₽</strong></div>
@@ -3937,6 +3937,46 @@ document.addEventListener('keydown',e=>{
   closeAddressSuggestions();
  }
 });
+
+// Доступность диалогов: перевод фокуса внутрь, удержание Tab и возврат фокуса
+(function(){
+ const selector = '#vpnGate:not([hidden]), #productModal.open, #checkoutModal.open, #orderConfirmation.open, #cartDrawer.open';
+ const focusable = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+ let activeDialog = null;
+ let previousFocus = null;
+ function syncDialogFocus(){
+  const next = document.querySelector(selector);
+  if(next === activeDialog) return;
+  if(activeDialog && !next && previousFocus?.isConnected){
+   previousFocus.focus({preventScroll:true});
+  }
+  activeDialog = next;
+  if(next){
+   previousFocus = document.activeElement;
+   const first = next.querySelector(focusable);
+   (first || next).focus({preventScroll:true});
+  } else {
+   previousFocus = null;
+  }
+ }
+ const observer = new MutationObserver(syncDialogFocus);
+ observer.observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
+ document.addEventListener('keydown',event=>{
+  if(event.key!=='Tab') return;
+  const dialog = document.querySelector(selector);
+  if(!dialog) return;
+  const items = [...dialog.querySelectorAll(focusable)].filter(el=>el.getClientRects().length);
+  if(!items.length){event.preventDefault();dialog.focus();return;}
+  const first=items[0],last=items[items.length-1];
+  if(event.shiftKey && (document.activeElement===first || !dialog.contains(document.activeElement))){
+   event.preventDefault();last.focus();
+  } else if(!event.shiftKey && (document.activeElement===last || !dialog.contains(document.activeElement))){
+   event.preventDefault();first.focus();
+  }
+ });
+ syncDialogFocus();
+})();
+
 
 /* ДЕКОРАТИВНЫЕ ЧАСТИЦЫ: заметные, но деликатные искры на каждой вещи */
 (function(){
